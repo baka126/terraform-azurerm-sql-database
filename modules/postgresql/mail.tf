@@ -42,15 +42,15 @@ resource "azurerm_postgresql_server" "server" {
   }
 }
 
-# resource "azurerm_postgresql_database" "dbs" {
-#   count = length(var.db_names)
+resource "azurerm_postgresql_database" "dbs" {
+  count = length(var.db_names)
 
-#   charset             = var.db_charset
-#   collation           = var.db_collation
-#   name                = var.db_names[count.index]
-#   resource_group_name = var.resource_group_name
-#   server_name         = azurerm_postgresql_server.server.name
-# }
+  charset             = var.db_charset
+  collation           = var.db_collation
+  name                = var.db_names[count.index]
+  resource_group_name = var.resource_group_name
+  server_name         = azurerm_postgresql_server.server.name
+}
 
 # resource "azurerm_postgresql_firewall_rule" "firewall_rules" {
 #   count = length(var.firewall_rules)
