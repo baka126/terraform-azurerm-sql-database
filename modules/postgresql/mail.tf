@@ -71,11 +71,11 @@ resource "azurerm_postgresql_virtual_network_rule" "vnet_rules" {
   subnet_id           = var.vnet_rules[count.index]["subnet_id"]
 }
 
-# resource "azurerm_postgresql_configuration" "db_configs" {
-#   count = length(keys(var.postgresql_configurations))
+resource "azurerm_postgresql_configuration" "db_configs" {
+  count = length(keys(var.postgresql_configurations))
 
-#   name                = element(keys(var.postgresql_configurations), count.index)
-#   resource_group_name = var.resource_group_name
-#   server_name         = azurerm_postgresql_server.server.name
-#   value               = element(values(var.postgresql_configurations), count.index)
-# }
+  name                = element(keys(var.postgresql_configurations), count.index)
+  resource_group_name = var.resource_group_name
+  server_name         = azurerm_postgresql_server.server.name
+  value               = element(values(var.postgresql_configurations), count.index)
+}
