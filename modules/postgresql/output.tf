@@ -21,17 +21,17 @@ output "firewall_rule_ids" {
 
 output "server_fqdn" {
   description = "The fully qualified domain name (FQDN) of the PostgreSQL server"
-  value       = azurerm_postgresql_server.server.fqdn
+  value       = azurerm_postgresql_server.this.fqdn
 }
 
 output "server_id" {
   description = "The resource id of the PostgreSQL server"
-  value       = azurerm_postgresql_server.server.id
+  value       = azurerm_postgresql_server.this.id
 }
 
 output "server_name" {
   description = "The name of the PostgreSQL server"
-  value       = azurerm_postgresql_server.server.name
+  value       = azurerm_postgresql_server.this.name
 }
 
 output "vnet_rule_ids" {

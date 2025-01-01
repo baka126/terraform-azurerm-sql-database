@@ -34,40 +34,40 @@ resource "azurerm_postgresql_server" "this" {
   }
 }
 
-resource "azurerm_postgresql_database" "dbs" {
+resource "azurerm_postgresql_database" "this" {
   count = length(var.db_names) && var.database_type == "postgresql" ? length(var.db_names) : 0
 
   charset             = var.db_charset
   collation           = var.db_collation
   name                = var.db_names[count.index]
   resource_group_name = var.resource_group_name
-  server_name         = azurerm_postgresql_server.server.name
+  server_name         = azurerm_postgresql_server.this.name
 }
 
-resource "azurerm_postgresql_firewall_rule" "firewall_rules" {
+resource "azurerm_postgresql_firewall_rule" "this" {
   count = length(var.firewall_rules) && var.database_type == "postgresql" ? length(var.firewall_rules) : 0
 
   end_ip_address      = var.firewall_rules[count.index]["end_ip"]
   name                = format("%s%s", var.firewall_rule_prefix, lookup(var.firewall_rules[count.index], "name", count.index))
   resource_group_name = var.resource_group_name
-  server_name         = azurerm_postgresql_server.server.name
+  server_name         = azurerm_postgresql_server.this.name
   start_ip_address    = var.firewall_rules[count.index]["start_ip"]
 }
 
-resource "azurerm_postgresql_virtual_network_rule" "vnet_rules" {
+resource "azurerm_postgresql_virtual_network_rule" "this" {
   count = length(var.vnet_rules) && var.database_type == "postgresql" ? length(var.vnet_rules) : 0
 
   name                = format("%s%s", var.vnet_rule_name_prefix, lookup(var.vnet_rules[count.index], "name", count.index))
   resource_group_name = var.resource_group_name
-  server_name         = azurerm_postgresql_server.server.name
+  server_name         = azurerm_postgresql_server.this.name
   subnet_id           = var.vnet_rules[count.index]["subnet_id"]
 }
 
-resource "azurerm_postgresql_configuration" "db_configs" {
+resource "azurerm_postgresql_configuration" "this" {
   count = length(keys(var.postgresql_configurations)) && var.database_type == "postgresql" ? length(keys(var.postgresql_configurations)) : 0
 
   name                = element(keys(var.postgresql_configurations), count.index)
   resource_group_name = var.resource_group_name
-  server_name         = azurerm_postgresql_server.server.name
+  server_name         = azurerm_postgresql_server.this.name
   value               = element(values(var.postgresql_configurations), count.index)
 }
