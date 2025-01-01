@@ -52,24 +52,24 @@ resource "azurerm_postgresql_database" "dbs" {
   server_name         = azurerm_postgresql_server.server.name
 }
 
-# resource "azurerm_postgresql_firewall_rule" "firewall_rules" {
-#   count = length(var.firewall_rules)
+resource "azurerm_postgresql_firewall_rule" "firewall_rules" {
+  count = length(var.firewall_rules)
 
-#   end_ip_address      = var.firewall_rules[count.index]["end_ip"]
-#   name                = format("%s%s", var.firewall_rule_prefix, lookup(var.firewall_rules[count.index], "name", count.index))
-#   resource_group_name = var.resource_group_name
-#   server_name         = azurerm_postgresql_server.server.name
-#   start_ip_address    = var.firewall_rules[count.index]["start_ip"]
-# }
+  end_ip_address      = var.firewall_rules[count.index]["end_ip"]
+  name                = format("%s%s", var.firewall_rule_prefix, lookup(var.firewall_rules[count.index], "name", count.index))
+  resource_group_name = var.resource_group_name
+  server_name         = azurerm_postgresql_server.server.name
+  start_ip_address    = var.firewall_rules[count.index]["start_ip"]
+}
 
-# resource "azurerm_postgresql_virtual_network_rule" "vnet_rules" {
-#   count = length(var.vnet_rules)
+resource "azurerm_postgresql_virtual_network_rule" "vnet_rules" {
+  count = length(var.vnet_rules)
 
-#   name                = format("%s%s", var.vnet_rule_name_prefix, lookup(var.vnet_rules[count.index], "name", count.index))
-#   resource_group_name = var.resource_group_name
-#   server_name         = azurerm_postgresql_server.server.name
-#   subnet_id           = var.vnet_rules[count.index]["subnet_id"]
-# }
+  name                = format("%s%s", var.vnet_rule_name_prefix, lookup(var.vnet_rules[count.index], "name", count.index))
+  resource_group_name = var.resource_group_name
+  server_name         = azurerm_postgresql_server.server.name
+  subnet_id           = var.vnet_rules[count.index]["subnet_id"]
+}
 
 # resource "azurerm_postgresql_configuration" "db_configs" {
 #   count = length(keys(var.postgresql_configurations))
