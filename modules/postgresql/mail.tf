@@ -27,20 +27,20 @@ resource "azurerm_postgresql_server" "server" {
     avm_yor_name = "server"
   } /*<box>*/ : replace(k, "avm_", var.tracing_tags_prefix) => v } : {}) /*</box>*/))
 
-#   dynamic "threat_detection_policy" {
-#     for_each = nonsensitive(var.threat_detection_policy) != null ? ["threat_detection_policy"] : []
+  dynamic "threat_detection_policy" {
+    for_each = nonsensitive(var.threat_detection_policy) != null ? ["threat_detection_policy"] : []
 
-#     content {
-#       disabled_alerts            = var.threat_detection_policy.disabled_alerts
-#       email_account_admins       = var.threat_detection_policy.email_account_admins
-#       email_addresses            = var.threat_detection_policy.email_addresses
-#       enabled                    = var.threat_detection_policy.enabled
-#       retention_days             = var.threat_detection_policy.retention_days
-#       storage_account_access_key = var.threat_detection_policy.storage_account_access_key
-#       storage_endpoint           = var.threat_detection_policy.storage_endpoint
-#     }
-#   }
-# }
+    content {
+      disabled_alerts            = var.threat_detection_policy.disabled_alerts
+      email_account_admins       = var.threat_detection_policy.email_account_admins
+      email_addresses            = var.threat_detection_policy.email_addresses
+      enabled                    = var.threat_detection_policy.enabled
+      retention_days             = var.threat_detection_policy.retention_days
+      storage_account_access_key = var.threat_detection_policy.storage_account_access_key
+      storage_endpoint           = var.threat_detection_policy.storage_endpoint
+    }
+  }
+}
 
 # resource "azurerm_postgresql_database" "dbs" {
 #   count = length(var.db_names)
