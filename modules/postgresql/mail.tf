@@ -1,4 +1,5 @@
-resource "azurerm_postgresql_server" "server" {
+resource "azurerm_postgresql_server" "this" {
+  count                             = var.database_type == "postgresql" ? 1 : 0
   location                          = var.location
   name                              = var.server_name
   resource_group_name               = var.resource_group_name
@@ -16,16 +17,7 @@ resource "azurerm_postgresql_server" "server" {
   public_network_access_enabled     = var.public_network_access_enabled
   ssl_minimal_tls_version_enforced  = var.ssl_minimal_tls_version_enforced
   storage_mb                        = var.storage_mb
-  tags = merge(var.tags, (/*<box>*/ (var.tracing_tags_enabled ? { for k, v in /*</box>*/ {
-    avm_git_commit           = "80225f6d5b9b27e0b5b4d0b83ec8a964823f27fe"
-    avm_git_file             = "main.tf"
-    avm_git_last_modified_at = "2023-01-11 06:11:02"
-    avm_git_org              = "Azure"
-    avm_git_repo             = "terraform-azurerm-postgresql"
-    avm_yor_trace            = "371d1c6b-501e-4680-9adb-8aaa394c3014"
-    } /*<box>*/ : replace(k, "avm_", var.tracing_tags_prefix) => v } : {}) /*</box>*/), (/*<box>*/ (var.tracing_tags_enabled ? { for k, v in /*</box>*/ {
-    avm_yor_name = "server"
-  } /*<box>*/ : replace(k, "avm_", var.tracing_tags_prefix) => v } : {}) /*</box>*/))
+  tags                              = var.tags
 
   dynamic "threat_detection_policy" {
     for_each = nonsensitive(var.threat_detection_policy) != null ? ["threat_detection_policy"] : []
@@ -43,7 +35,7 @@ resource "azurerm_postgresql_server" "server" {
 }
 
 resource "azurerm_postgresql_database" "dbs" {
-  count = length(var.db_names)
+  count = length(var.db_names) && var.database_type == "postgresql" ? length(var.db_names) : 0
 
   charset             = var.db_charset
   collation           = var.db_collation
@@ -53,7 +45,7 @@ resource "azurerm_postgresql_database" "dbs" {
 }
 
 resource "azurerm_postgresql_firewall_rule" "firewall_rules" {
-  count = length(var.firewall_rules)
+  count = length(var.firewall_rules) && var.database_type == "postgresql" ? length(var.firewall_rules) : 0
 
   end_ip_address      = var.firewall_rules[count.index]["end_ip"]
   name                = format("%s%s", var.firewall_rule_prefix, lookup(var.firewall_rules[count.index], "name", count.index))
@@ -63,7 +55,7 @@ resource "azurerm_postgresql_firewall_rule" "firewall_rules" {
 }
 
 resource "azurerm_postgresql_virtual_network_rule" "vnet_rules" {
-  count = length(var.vnet_rules)
+  count = length(var.vnet_rules) && var.database_type == "postgresql" ? length(var.vnet_rules) : 0
 
   name                = format("%s%s", var.vnet_rule_name_prefix, lookup(var.vnet_rules[count.index], "name", count.index))
   resource_group_name = var.resource_group_name
@@ -72,7 +64,7 @@ resource "azurerm_postgresql_virtual_network_rule" "vnet_rules" {
 }
 
 resource "azurerm_postgresql_configuration" "db_configs" {
-  count = length(keys(var.postgresql_configurations))
+  count = length(keys(var.postgresql_configurations)) && var.database_type == "postgresql" ? length(keys(var.postgresql_configurations)) : 0
 
   name                = element(keys(var.postgresql_configurations), count.index)
   resource_group_name = var.resource_group_name
