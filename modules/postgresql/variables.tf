@@ -124,22 +124,15 @@ variable "sku_name" {
   description = "Specifies the SKU Name for this PostgreSQL Server. The name of the SKU, follows the tier + family + cores pattern (e.g. B_Gen4_1, GP_Gen5_8)."
 }
 
-variable "ssl_enforcement_enabled" {
-  type        = bool
-  default     = true
-  description = "Specifies if SSL should be enforced on connections. Possible values are Enabled and Disabled."
-}
-
-variable "ssl_minimal_tls_version_enforced" {
-  type        = string
-  default     = "TLS1_2"
-  description = "(Optional) The minimum TLS version to support on the sever. Possible values are `TLSEnforcementDisabled`, `TLS1_0`, `TLS1_1`, and `TLS1_2`. Defaults to `TLS1_2`. `ssl_minimal_tls_version_enforced` must be set to `TLSEnforcementDisabled` when `ssl_enforcement_enabled` is set to `false`."
-}
-
 variable "storage_mb" {
   type        = number
   default     = 102400
   description = "Max storage allowed for a server. Possible values are between 5120 MB(5GB) and 1048576 MB(1TB) for the Basic SKU and between 5120 MB(5GB) and 4194304 MB(4TB) for General Purpose/Memory Optimized SKUs."
+}
+
+variable "storage_tier" {
+  type        = string
+  description = "Possible values are P4, P6, P10, P15,P20, P30,P40, P50,P60, P70 or P80"
 }
 
 variable "tags" {
@@ -148,21 +141,17 @@ variable "tags" {
   description = "A map of tags to set on every taggable resources. Empty by default."
 }
 
-variable "threat_detection_policy" {
+variable "authentication" {
   type = object(
     {
-      enabled                    = optional(bool)
-      disabled_alerts            = optional(set(string))
-      email_account_admins       = optional(bool)
-      email_addresses            = optional(set(string))
-      retention_days             = optional(number)
-      storage_account_access_key = optional(string)
-      storage_endpoint           = optional(string)
+      active_directory_auth_enabled = optional(bool)
+      password_auth_enabled         = optional(bool)
+      tenant_id                     = optional(string)
     }
   )
   default     = null
-  description = "Threat detection policy configuration, known in the API as Server Security Alerts Policy"
-  sensitive   = true
+  description = "Authentication configuration, known in the API as Server Active Directory Administrator details"
+  
 }
 
 # tflint-ignore: terraform_unused_declarations
