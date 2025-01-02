@@ -11,10 +11,16 @@ resource "azurerm_postgresql_flexible_server" "this" {
   auto_grow_enabled                 = var.auto_grow_enabled
   backup_retention_days             = var.backup_retention_days
   create_mode                       = var.create_mode
+  delegated_subnet_id               = var.delegated_subnet_id
+  private_dns_zone_id               = var.private_dns_zone_id
   geo_redundant_backup_enabled      = var.geo_redundant_backup_enabled
   public_network_access_enabled     = var.public_network_access_enabled
+  point_in_time_restore_time_in_utc = var.point_in_time_restore_time_in_utc
+  replication_role                  =  var.replication_role
+  source_server_id                  = var.source_server_id
   storage_mb                        = var.storage_mb
   storage_tier                      = var.storage_tier 
+  zone                              = var.zone
   tags                              = var.tags
 
   dynamic "authentication" {
@@ -26,8 +32,45 @@ resource "azurerm_postgresql_flexible_server" "this" {
     }
   }
 
+ dynamic "customer_managed_key" {
+    for_each = var.customer_managed_key
+    content {
+      key_vault_key_id = var.customer_managed_key.value.key_vault_key_id
+      primary_user_assigned_identity_id =  var.customer_managed_key.value.primary_user_assigned_identity_id
+      geo_backup_key_vault_key_id =  var.customer_managed_key.value.geo_backup_key_vault_key_id
+      geo_backup_user_assigned_identity_id =  var.customer_managed_key.value.geo_backup_user_assigned_identity_id
+    }
+  }
 
+ dynamic "high_availability" {
+    for_each = var.high_availability
+    content {
+      mode = var.high_availability.value.mode
+      standby_availability_zone =  var.high_availability.value.standby_availability_zone
+    }  
+ }
+
+ dynamic "identity" {
+    for_each = var.identity
+    content {
+      type = var.identity.value.type
+      identity_ids =  var.identity.value.identity_ids
+    }
+   
+ }
+
+ dynamic "maintenance_window" {
+    for_each = var.maintenance_window
+    content {
+      day_of_week = var.maintenance_window.value.day_of_week
+      start_hour =  var.maintenance_window.value.start_hour
+      start_minute =  var.maintenance_window.value.start_minute
+    }
+   
+ }
 }
+
+
 
 resource "azurerm_postgresql_database" "this" {
   count = length(var.db_names) && var.database_type == "postgresql" ? length(var.db_names) : 0

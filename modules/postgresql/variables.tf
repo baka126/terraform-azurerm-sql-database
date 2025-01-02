@@ -33,6 +33,32 @@ variable "server_name" {
   description = "Specifies the name of the PostgreSQL Server. Changing this forces a new resource to be created."
 }
 
+variable "point_in_time_restore_time_in_utc" {
+  type        = string
+  default     = null
+  description = "(Optional) Point in time restore time in UTC. Changing this forces a new resource to be created."
+}
+
+variable "zone" {
+  type        = string
+  default     = null
+  description = "(Optional) Specifies the Availability Zone in which the PostgreSQL Flexible Server should be located."
+  
+}
+
+variable "replication_role" {
+  type        = string
+  default     = null
+  description = " (Optional) The resource ID of the source PostgreSQL Flexible Server to be restored. Required when create_mode is GeoRestore, PointInTimeRestore or Replica." 
+}
+
+variable "source_server_id" {
+  type        = string
+  default     = null
+  description = "(Optional) The source server id for the PostgreSQL Flexible Server. Changing this forces a new resource to be created."
+  
+}
+
 variable "auto_grow_enabled" {
   type        = bool
   default     = true
@@ -50,6 +76,18 @@ variable "create_mode" {
   default     = "Default"
   description = "(Optional) The creation mode. Can be used to restore or replicate existing servers. Possible values are `Default`, `Replica`, `GeoRestore`, and `PointInTimeRestore`. Defaults to `Default.`"
   nullable    = false
+}
+
+variable "delegated_subnet_id" {
+  type        = string
+  default     = null
+  description = "(Optional) The delegated subnet resource id used to create the server. Changing this forces a new resource to be created."
+}
+
+variable "private_dns_zone_id" {
+  type        = string
+  default     = null
+  description = "(Optional) The private dns zone id used to create the server. Changing this forces a new resource to be created."
 }
 
 variable "creation_source_server_id" {
@@ -153,6 +191,58 @@ variable "authentication" {
   description = "Authentication configuration, known in the API as Server Active Directory Administrator details"
   
 }
+
+variable "customer_managed_key" {
+  type = object(
+    {
+      key_vault_key_id = optional(string)
+      primary_user_assigned_identity_id = optional(string)
+      geo_backup_key_vault_key_id = optional(string)
+      geo_backup_user_assigned_identity_id = optional(string)
+    }
+  )
+  default     = null
+  description = "Customer Managed Key configuration, known in the API as Server Active Directory Administrator details"
+    validation {
+      condition     = var.customer_managed_key == null || var.customer_managed_key.key_vault_key_id != null && var.customer_managed_key.primary_user_assigned_identity_id != null
+      error_message = "Either `key_vault_key_id` and `primary_user_assigned_identity_id` must be specified, or none of them."
+  }
+    }
+  
+variable "high_availability" {
+  type = object(
+    {
+      mode = optional(string)
+      standby_availability_zone = optional(string)
+    }
+  )
+  default     = null
+  description = "High availability configuration, The high availability mode for the PostgreSQL Flexible Server. Possible value are SameZone or ZoneRedundant"
+}
+
+variable "identity" {
+  type = object(
+    {
+      type = optional(string)
+      identity_ids = optional(list(string))
+    }
+  )
+  default     = null
+  description = "Identity configuration, For type The only possible value is UserAssigned"
+}
+
+variable "maintenance_window" {
+  type = object(
+    {
+      day_of_week = optional(number)
+      start_hour  = optional(number)
+      start_minute = optional(number)
+    }
+  )
+  default     = null
+  description = "Maintenance window configuration, known in the API as Server Maintenance Window details"
+}
+  
 
 # tflint-ignore: terraform_unused_declarations
 variable "tracing_tags_enabled" {
