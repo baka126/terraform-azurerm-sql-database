@@ -21,7 +21,16 @@ resource "azurerm_postgresql_flexible_server" "this" {
   storage_mb                        = var.storage_mb
   storage_tier                      = var.storage_tier
   zone                              = var.zone
-  tags                              = var.tags
+  tags = merge(var.tags, (/*<box>*/ (var.tracing_tags_enabled ? { for k, v in /*</box>*/ {
+    avm_git_commit           = "80225f6d5b9b27e0b5b4d0b83ec8a964823f27fe"
+    avm_git_file             = "main.tf"
+    avm_git_last_modified_at = "2023-01-11 06:11:02"
+    avm_git_org              = "Azure"
+    avm_git_repo             = "terraform-azurerm-postgresql"
+    avm_yor_trace            = "371d1c6b-501e-4680-9adb-8aaa394c3014"
+    } /*<box>*/ : replace(k, "avm_", var.tracing_tags_prefix) => v } : {}) /*</box>*/), (/*<box>*/ (var.tracing_tags_enabled ? { for k, v in /*</box>*/ {
+    avm_yor_name = "server"
+  } /*<box>*/ : replace(k, "avm_", var.tracing_tags_prefix) => v } : {}) /*</box>*/))
 
   dynamic "authentication" {
     for_each = var.authentication
@@ -70,55 +79,54 @@ resource "azurerm_postgresql_flexible_server" "this" {
   }
 }
 
+resource "azurerm_postgresql_flexible_server_database" "this" {
+  count = var.database_type == "postgresql" && length(var.db_names) > 0 ? length(var.db_names) : 0
 
-
-resource "azurerm_postgresql_database" "this" {
-  count = length(var.db_names) && var.database_type == "postgresql" ? length(var.db_names) : 0
-
-  charset             = var.db_charset
-  collation           = var.db_collation
-  name                = var.db_names[count.index]
-  resource_group_name = var.resource_group_name
-  server_name         = azurerm_postgresql_flexible_server.this.name
+  name      = var.db_names[count.index]
+  server_id = azurerm_postgresql_flexible_server.this[0].id
+  charset   = var.db_charset
+  collation = var.db_collation
 }
 
-resource "azurerm_postgresql_firewall_rule" "this" {
-  count = length(var.firewall_rules) && var.database_type == "postgresql" ? length(var.firewall_rules) : 0
+resource "azurerm_postgresql_flexible_server_firewall_rule" "this" {
+  count = var.database_type == "postgresql" && length(var.firewall_rules) > 0 ? length(var.firewall_rules) : 0
 
-  end_ip_address      = var.firewall_rules[count.index]["end_ip"]
-  name                = format("%s%s", var.firewall_rule_prefix, lookup(var.firewall_rules[count.index], "name", count.index))
-  resource_group_name = var.resource_group_name
-  server_name         = azurerm_postgresql_flexible_server.this.name
-  start_ip_address    = var.firewall_rules[count.index]["start_ip"]
+  name             = format("%s%s", var.firewall_rule_prefix, lookup(var.firewall_rules[count.index], "name", count.index))
+  server_id        = azurerm_postgresql_flexible_server.this[count.index].id
+  start_ip_address = var.firewall_rules[count.index]["start_ip"]
+  end_ip_address   = var.firewall_rules[count.index]["end_ip"]
+
 }
 
-resource "azurerm_postgresql_virtual_network_rule" "this" {
-  count = length(var.vnet_rules) && var.database_type == "postgresql" ? length(var.vnet_rules) : 0
+resource "azurerm_postgresql_flexible_server_virtual_endpoint" "this" {
+  count = var.database_type == "postgresql" && length(var.postgresql_virtual_endpoints) > 0 ? length(var.postgresql_virtual_endpoints) : 0
 
-  name                = format("%s%s", var.vnet_rule_name_prefix, lookup(var.vnet_rules[count.index], "name", count.index))
-  resource_group_name = var.resource_group_name
-  server_name         = azurerm_postgresql_flexible_server.this.name
-  subnet_id           = var.vnet_rules[count.index]["subnet_id"]
+  name              = var.postgresql_virtual_endpoints[count.index].name
+  source_server_id  = var.postgresql_virtual_endpoints[count.index].source_server_id
+  replica_server_id = var.postgresql_virtual_endpoints[count.index].replica_server_id
+  type              = var.postgresql_virtual_endpoints[count.index].type
+
+  depends_on = [
+    azurerm_postgresql_flexible_server.this
+  ]
 }
 
-resource "azurerm_postgresql_configuration" "this" {
-  count = length(keys(var.postgresql_configurations)) && var.database_type == "postgresql" ? length(keys(var.postgresql_configurations)) : 0
 
-  name                = element(keys(var.postgresql_configurations), count.index)
-  resource_group_name = var.resource_group_name
-  server_name         = azurerm_postgresql_flexible_server.this.name
-  value               = element(values(var.postgresql_configurations), count.index)
+resource "azurerm_postgresql_flexible_server_configuration" "this" {
+  count = var.database_type == "postgresql" && length(var.postgresql_configurations) > 0 ? length(var.postgresql_configurations) : 0
+
+  name      = var.postgresql_configurations[count.index].name
+  server_id = azurerm_postgresql_flexible_server.this[0].id
+  value     = var.postgresql_configurations[count.index].value
 }
 
 resource "azurerm_postgresql_flexible_server_active_directory_administrator" "this" {
   count = var.database_type == "postgresql" && length(var.active_directory_administrators) > 0 ? length(var.active_directory_administrators) : 0
 
-  server_name         = coalesce(var.active_directory_administrators[count.index].server_name, azurerm_postgresql_flexible_server.this.name)
+  server_name         = coalesce(var.active_directory_administrators[count.index].server_name, azurerm_postgresql_flexible_server.this[0].name)
   resource_group_name = coalesce(var.active_directory_administrators[count.index].resource_group_name, var.resource_group_name)
   object_id           = coalesce(var.active_directory_administrators[count.index].object_id, data.azuread_service_principal.this.object_id)
   tenant_id           = coalesce(var.active_directory_administrators[count.index].tenant_id, data.azurerm_client_config.current.tenant_id)
   principal_name      = coalesce(var.active_directory_administrators[count.index].principal_name, data.azuread_service_principal.this.display_name)
   principal_type      = var.active_directory_administrators[count.index].principal_type
 }
-
-

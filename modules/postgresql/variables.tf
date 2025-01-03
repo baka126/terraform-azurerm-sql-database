@@ -90,11 +90,7 @@ variable "private_dns_zone_id" {
   description = "(Optional) The private dns zone id used to create the server. Changing this forces a new resource to be created."
 }
 
-variable "creation_source_server_id" {
-  type        = string
-  default     = null
-  description = "(Optional) For creation modes other than `Default`, the source server ID to use."
-}
+
 
 variable "db_charset" {
   type        = string
@@ -132,17 +128,17 @@ variable "geo_redundant_backup_enabled" {
   description = "Enable Geo-redundant or not for server backup. Valid values for this property are Enabled or Disabled, not supported for the basic tier."
 }
 
-variable "infrastructure_encryption_enabled" {
-  type        = bool
-  default     = true
-  description = "Whether or not infrastructure is encrypted for this server"
-}
+
 
 variable "postgresql_configurations" {
-  type        = map(string)
-  default     = {}
-  description = "A map with PostgreSQL configurations to enable."
+  type = list(object({
+    name  = string
+    value = string
+  }))
+  default     = []
+  description = "List of PostgreSQL configurations to apply to the flexible server."
 }
+
 
 variable "public_network_access_enabled" {
   type        = bool
@@ -260,16 +256,15 @@ variable "tracing_tags_prefix" {
   nullable    = false
 }
 
-variable "vnet_rule_name_prefix" {
-  type        = string
-  default     = "postgresql-vnet-rule-"
-  description = "Specifies prefix for vnet rule names."
-}
-
-variable "vnet_rules" {
-  type        = list(map(string))
+variable "postgresql_virtual_endpoints" {
+  type = list(object({
+    name              = string
+    type              = string
+    source_server_id  = string
+    replica_server_id = string
+  }))
   default     = []
-  description = "The list of maps, describing vnet rules. Valud map items: name, subnet_id."
+  description = "List of virtual endpoints to create for PostgreSQL Flexible Server replicas."
 }
 
 ####active directory####

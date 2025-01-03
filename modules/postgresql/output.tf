@@ -11,30 +11,46 @@ output "administrator_password" {
 
 output "database_ids" {
   description = "The list of all database resource ids"
-  value       = [azurerm_postgresql_database.dbs[*].id]
+  value       = [azurerm_postgresql_flexible_server_database.this[*].id]
 }
 
 output "firewall_rule_ids" {
   description = "The list of all firewall rule resource ids"
-  value       = [azurerm_postgresql_firewall_rule.firewall_rules[*].id]
+  value       = [azurerm_postgresql_flexible_server_firewall_rule.this[*].id]
 }
 
 output "server_fqdn" {
   description = "The fully qualified domain name (FQDN) of the PostgreSQL server"
-  value       = azurerm_postgresql_server.this.fqdn
+  value       = azurerm_postgresql_flexible_server.this[*].fqdn
 }
 
 output "server_id" {
   description = "The resource id of the PostgreSQL server"
-  value       = azurerm_postgresql_server.this.id
+  value       = azurerm_postgresql_flexible_server.this[*].id
 }
 
 output "server_name" {
   description = "The name of the PostgreSQL server"
-  value       = azurerm_postgresql_server.this.name
+  value       = azurerm_postgresql_flexible_server.this[*].name
 }
 
-output "vnet_rule_ids" {
-  description = "The list of all vnet rule resource ids"
-  value       = [azurerm_postgresql_virtual_network_rule.vnet_rules[*].id]
+
+#####active directory#####
+
+output "active_directory_administrators_id" {
+  description = "The ID of the PostgreSQL Flexible Server Active Directory Administrator."
+  value       = [azurerm_postgresql_flexible_server_active_directory_administrator.this[*].id]
+}
+
+#####server config#####
+
+output "postgresql_configurations_id" {
+  description = "The ID of the PostgreSQL Flexible Server Configuration."
+  value       = [azurerm_postgresql_flexible_server_configuration.this[*].id]
+}
+
+output "virtual_endpoints_id" {
+  description = "The ID of the PostgreSQL Flexible Server Virtual Endpoint."
+  value       = [azurerm_postgresql_flexible_server_virtual_endpoint.this[*].id]
+
 }
