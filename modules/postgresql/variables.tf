@@ -1,11 +1,11 @@
 variable "database_type" {
-  type = string
+  type        = string
   description = "Type of database to be created"
 
   validation {
-    condition = contains(["mysql", "postgresql"], var.database_type)
+    condition     = contains(["mysql", "postgresql"], var.database_type)
     error_message = "Valid values for database_type are 'mysql' or 'postgresql'."
-  } 
+  }
 }
 variable "administrator_login" {
   type        = string
@@ -43,20 +43,20 @@ variable "zone" {
   type        = string
   default     = null
   description = "(Optional) Specifies the Availability Zone in which the PostgreSQL Flexible Server should be located."
-  
+
 }
 
 variable "replication_role" {
   type        = string
   default     = null
-  description = " (Optional) The resource ID of the source PostgreSQL Flexible Server to be restored. Required when create_mode is GeoRestore, PointInTimeRestore or Replica." 
+  description = " (Optional) The resource ID of the source PostgreSQL Flexible Server to be restored. Required when create_mode is GeoRestore, PointInTimeRestore or Replica."
 }
 
 variable "source_server_id" {
   type        = string
   default     = null
   description = "(Optional) The source server id for the PostgreSQL Flexible Server. Changing this forces a new resource to be created."
-  
+
 }
 
 variable "auto_grow_enabled" {
@@ -189,30 +189,30 @@ variable "authentication" {
   )
   default     = null
   description = "Authentication configuration, known in the API as Server Active Directory Administrator details"
-  
+
 }
 
 variable "customer_managed_key" {
   type = object(
     {
-      key_vault_key_id = optional(string)
-      primary_user_assigned_identity_id = optional(string)
-      geo_backup_key_vault_key_id = optional(string)
+      key_vault_key_id                     = optional(string)
+      primary_user_assigned_identity_id    = optional(string)
+      geo_backup_key_vault_key_id          = optional(string)
       geo_backup_user_assigned_identity_id = optional(string)
     }
   )
   default     = null
   description = "Customer Managed Key configuration, known in the API as Server Active Directory Administrator details"
-    validation {
-      condition     = var.customer_managed_key == null || var.customer_managed_key.key_vault_key_id != null && var.customer_managed_key.primary_user_assigned_identity_id != null
-      error_message = "Either `key_vault_key_id` and `primary_user_assigned_identity_id` must be specified, or none of them."
+  validation {
+    condition     = var.customer_managed_key == null || var.customer_managed_key.key_vault_key_id != null && var.customer_managed_key.primary_user_assigned_identity_id != null
+    error_message = "Either `key_vault_key_id` and `primary_user_assigned_identity_id` must be specified, or none of them."
   }
-    }
-  
+}
+
 variable "high_availability" {
   type = object(
     {
-      mode = optional(string)
+      mode                      = optional(string)
       standby_availability_zone = optional(string)
     }
   )
@@ -223,7 +223,7 @@ variable "high_availability" {
 variable "identity" {
   type = object(
     {
-      type = optional(string)
+      type         = optional(string)
       identity_ids = optional(list(string))
     }
   )
@@ -234,15 +234,15 @@ variable "identity" {
 variable "maintenance_window" {
   type = object(
     {
-      day_of_week = optional(number)
-      start_hour  = optional(number)
+      day_of_week  = optional(number)
+      start_hour   = optional(number)
       start_minute = optional(number)
     }
   )
   default     = null
   description = "Maintenance window configuration, known in the API as Server Maintenance Window details"
 }
-  
+
 
 # tflint-ignore: terraform_unused_declarations
 variable "tracing_tags_enabled" {
@@ -270,4 +270,18 @@ variable "vnet_rules" {
   type        = list(map(string))
   default     = []
   description = "The list of maps, describing vnet rules. Valud map items: name, subnet_id."
+}
+
+####active directory####
+variable "active_directory_administrators" {
+  type = list(object({
+    server_name         = optional(string, null)
+    resource_group_name = optional(string, null)
+    object_id           = optional(string, null)
+    tenant_id           = optional(string, null)
+    principal_name      = optional(string, null)
+    principal_type      = optional(string, "ServicePrincipal") # Default value
+  }))
+  default     = []
+  description = "List of AD administrators for PostgreSQL Flexible Server. Each item defines an administrator."
 }
