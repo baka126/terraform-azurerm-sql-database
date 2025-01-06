@@ -148,25 +148,26 @@ variable "public_network_access_enabled" {
 
 variable "server_version" {
   type        = string
-  default     = "9.5"
-  description = "Specifies the version of PostgreSQL to use. Valid values are `9.5`, `9.6`, `10.0`, `10.2` and `11`. Changing this forces a new resource to be created."
+  default     = "15"
+  description = "Specifies the version of PostgreSQL to use. Valid values are 11,12, 13, 14, 15 and 16. Changing this forces a new resource to be created."
 }
 
 variable "sku_name" {
   type        = string
-  default     = "GP_Gen5_4"
-  description = "Specifies the SKU Name for this PostgreSQL Server. The name of the SKU, follows the tier + family + cores pattern (e.g. B_Gen4_1, GP_Gen5_8)."
+  default     = "B_Standard_B1ms"
+  description = "Specifies the SKU Name for this PostgreSQL Server. The name of the SKU, follows the tier + family + cores pattern (e.g.  B_Standard_B1ms, GP_Standard_D2s_v3, MO_Standard_E4s_v3)."
 }
 
 variable "storage_mb" {
   type        = number
-  default     = 102400
-  description = "Max storage allowed for a server. Possible values are between 5120 MB(5GB) and 1048576 MB(1TB) for the Basic SKU and between 5120 MB(5GB) and 4194304 MB(4TB) for General Purpose/Memory Optimized SKUs."
+  default     = 32768
+  description = "The max storage allowed for the PostgreSQL Flexible Server. Possible values are 32768, 65536, 131072, 262144, 524288, 1048576, 2097152, 4193280, 4194304, 8388608, 16777216 and 33553408."
 }
 
 variable "storage_tier" {
   type        = string
   description = "Possible values are P4, P6, P10, P15,P20, P30,P40, P50,P60, P70 or P80"
+  default = null
 }
 
 variable "tags" {
@@ -176,66 +177,62 @@ variable "tags" {
 }
 
 variable "authentication" {
-  type = object(
-    {
-      active_directory_auth_enabled = optional(bool)
-      password_auth_enabled         = optional(bool)
-      tenant_id                     = optional(string)
-    }
-  )
-  default     = null
+  type    = list(object({
+    password_auth_enabled         = bool
+    active_directory_auth_enabled = bool
+    tenant_id                     = string
+  }))
+  default = []
   description = "Authentication configuration, known in the API as Server Active Directory Administrator details"
 
 }
 
 variable "customer_managed_key" {
-  type = object(
-    {
-      key_vault_key_id                     = optional(string)
-      primary_user_assigned_identity_id    = optional(string)
-      geo_backup_key_vault_key_id          = optional(string)
-      geo_backup_user_assigned_identity_id = optional(string)
-    }
-  )
-  default     = null
-  description = "Customer Managed Key configuration, known in the API as Server Active Directory Administrator details"
+  description = "A map of customer managed key configurations. Each key must include key_vault_key_id and primary_user_assigned_identity_id."
+  type = map(object({
+    key_vault_key_id                     = string
+    primary_user_assigned_identity_id    = string
+    geo_backup_key_vault_key_id          = optional(string)
+    geo_backup_user_assigned_identity_id = optional(string)
+  }))
+  default = {}
+
   validation {
-    condition     = var.customer_managed_key == null || var.customer_managed_key.key_vault_key_id != null && var.customer_managed_key.primary_user_assigned_identity_id != null
-    error_message = "Either `key_vault_key_id` and `primary_user_assigned_identity_id` must be specified, or none of them."
+    condition = alltrue([
+      for key, value in var.customer_managed_key :
+      value.key_vault_key_id != "" && value.primary_user_assigned_identity_id != ""
+    ])
+    error_message = "Each customer_managed_key must include both key_vault_key_id and primary_user_assigned_identity_id."
   }
 }
 
 variable "high_availability" {
-  type = object(
+  type = list(object(
     {
       mode                      = optional(string)
       standby_availability_zone = optional(string)
     }
-  )
-  default     = null
+  ))
+  default     = []
   description = "High availability configuration, The high availability mode for the PostgreSQL Flexible Server. Possible value are SameZone or ZoneRedundant"
 }
 
 variable "identity" {
-  type = object(
-    {
-      type         = optional(string)
-      identity_ids = optional(list(string))
-    }
-  )
-  default     = null
+  type    = list(object({
+    type         = string
+    identity_ids = list(string)
+  }))
+  default = []
   description = "Identity configuration, For type The only possible value is UserAssigned"
 }
 
 variable "maintenance_window" {
-  type = object(
-    {
-      day_of_week  = optional(number)
-      start_hour   = optional(number)
-      start_minute = optional(number)
-    }
-  )
-  default     = null
+  type    = list(object({
+    day_of_week  = number
+    start_hour   = number
+    start_minute = number
+  }))
+  default = []
   description = "Maintenance window configuration, known in the API as Server Maintenance Window details"
 }
 
@@ -270,11 +267,11 @@ variable "postgresql_virtual_endpoints" {
 ####active directory####
 variable "active_directory_administrators" {
   type = list(object({
-    server_name         = optional(string, null)
-    resource_group_name = optional(string, null)
-    object_id           = optional(string, null)
-    tenant_id           = optional(string, null)
-    principal_name      = optional(string, null)
+    server_name         = optional(string)
+    resource_group_name = optional(string)
+    object_id           = optional(string)
+    tenant_id           = optional(string)
+    principal_name      = optional(string)
     principal_type      = optional(string, "ServicePrincipal") # Default value
   }))
   default     = []

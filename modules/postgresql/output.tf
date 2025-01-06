@@ -21,17 +21,17 @@ output "firewall_rule_ids" {
 
 output "server_fqdn" {
   description = "The fully qualified domain name (FQDN) of the PostgreSQL server"
-  value       = azurerm_postgresql_flexible_server.this[*].fqdn
+  value       = azurerm_postgresql_flexible_server.this[0].fqdn
 }
 
 output "server_id" {
   description = "The resource id of the PostgreSQL server"
-  value       = azurerm_postgresql_flexible_server.this[*].id
+  value       = azurerm_postgresql_flexible_server.this[0].id
 }
 
 output "server_name" {
   description = "The name of the PostgreSQL server"
-  value       = azurerm_postgresql_flexible_server.this[*].name
+  value       = azurerm_postgresql_flexible_server.this[0].name
 }
 
 
@@ -39,7 +39,7 @@ output "server_name" {
 
 output "active_directory_administrators_id" {
   description = "The ID of the PostgreSQL Flexible Server Active Directory Administrator."
-  value       = [azurerm_postgresql_flexible_server_active_directory_administrator.this[*].id]
+  value       = azurerm_postgresql_flexible_server_active_directory_administrator.this[*].id
 }
 
 #####server config#####

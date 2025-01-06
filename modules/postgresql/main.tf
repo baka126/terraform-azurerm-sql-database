@@ -32,51 +32,50 @@ resource "azurerm_postgresql_flexible_server" "this" {
     avm_yor_name = "server"
   } /*<box>*/ : replace(k, "avm_", var.tracing_tags_prefix) => v } : {}) /*</box>*/))
 
-  dynamic "authentication" {
-    for_each = var.authentication
-    content {
-      password_auth_enabled         = var.authentication.value.password_auth_enabled
-      active_directory_auth_enabled = var.authentication.value.active_directory_auth_enabled
-      tenant_id                     = var.authentication.value.tenant_id
-    }
+dynamic "authentication" {
+  for_each = var.authentication
+  content {
+    password_auth_enabled         = authentication.value.password_auth_enabled
+    active_directory_auth_enabled = authentication.value.active_directory_auth_enabled
+    tenant_id                     = authentication.value.tenant_id
   }
+}
 
-  dynamic "customer_managed_key" {
-    for_each = var.customer_managed_key
-    content {
-      key_vault_key_id                     = var.customer_managed_key.value.key_vault_key_id
-      primary_user_assigned_identity_id    = var.customer_managed_key.value.primary_user_assigned_identity_id
-      geo_backup_key_vault_key_id          = var.customer_managed_key.value.geo_backup_key_vault_key_id
-      geo_backup_user_assigned_identity_id = var.customer_managed_key.value.geo_backup_user_assigned_identity_id
-    }
+dynamic "customer_managed_key" {
+  for_each = var.customer_managed_key
+  content {
+    key_vault_key_id                     = customer_managed_key.value.key_vault_key_id
+    primary_user_assigned_identity_id    = customer_managed_key.value.primary_user_assigned_identity_id
+    geo_backup_key_vault_key_id          = customer_managed_key.value.geo_backup_key_vault_key_id
+    geo_backup_user_assigned_identity_id = customer_managed_key.value.geo_backup_user_assigned_identity_id
   }
+}
 
-  dynamic "high_availability" {
-    for_each = var.high_availability
-    content {
-      mode                      = var.high_availability.value.mode
-      standby_availability_zone = var.high_availability.value.standby_availability_zone
-    }
+dynamic "high_availability" {
+  for_each = var.high_availability
+  content {
+    mode                      = high_availability.value.mode
+    standby_availability_zone = high_availability.value.standby_availability_zone
   }
+}
 
-  dynamic "identity" {
-    for_each = var.identity
-    content {
-      type         = var.identity.value.type
-      identity_ids = var.identity.value.identity_ids
-    }
-
+dynamic "identity" {
+  for_each = var.identity
+  content {
+    type         = identity.value.type
+    identity_ids = identity.value.identity_ids
   }
+}
 
-  dynamic "maintenance_window" {
-    for_each = var.maintenance_window
-    content {
-      day_of_week  = var.maintenance_window.value.day_of_week
-      start_hour   = var.maintenance_window.value.start_hour
-      start_minute = var.maintenance_window.value.start_minute
-    }
-
+dynamic "maintenance_window" {
+  for_each = var.maintenance_window
+  content {
+    day_of_week  = maintenance_window.value.day_of_week
+    start_hour   = maintenance_window.value.start_hour
+    start_minute = maintenance_window.value.start_minute
   }
+}
+
 }
 
 resource "azurerm_postgresql_flexible_server_database" "this" {
@@ -125,8 +124,8 @@ resource "azurerm_postgresql_flexible_server_active_directory_administrator" "th
 
   server_name         = coalesce(var.active_directory_administrators[count.index].server_name, azurerm_postgresql_flexible_server.this[0].name)
   resource_group_name = coalesce(var.active_directory_administrators[count.index].resource_group_name, var.resource_group_name)
-  object_id           = coalesce(var.active_directory_administrators[count.index].object_id, data.azuread_service_principal.this.object_id)
+  object_id           = var.active_directory_administrators[count.index].object_id 
   tenant_id           = coalesce(var.active_directory_administrators[count.index].tenant_id, data.azurerm_client_config.current.tenant_id)
-  principal_name      = coalesce(var.active_directory_administrators[count.index].principal_name, data.azuread_service_principal.this.display_name)
+  principal_name      = var.active_directory_administrators[count.index].principal_name 
   principal_type      = var.active_directory_administrators[count.index].principal_type
 }
