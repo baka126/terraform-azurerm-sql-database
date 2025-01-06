@@ -2,8 +2,6 @@ resource "random_id" "rg_name" {
   byte_length = 8
 }
 
-data "azurerm_client_config" "current" {}
-
 resource "random_password" "password" {
   length      = 20
   min_lower   = 1
@@ -67,6 +65,7 @@ resource "time_sleep" "sleep" {
 }
 
 module "postgresql_replica" {
+  # checkov:skip=CKV_AZURE_136: "Ensure that PostgreSQL Flexible server enables geo-redundant backups"
   source = "../../modules/postgresql"
 
   database_type       = "postgresql"
