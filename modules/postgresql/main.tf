@@ -21,16 +21,7 @@ resource "azurerm_postgresql_flexible_server" "this" {
   storage_mb                        = var.storage_mb
   storage_tier                      = var.storage_tier
   zone                              = var.zone
-  tags = merge(var.tags, (/*<box>*/ (var.tracing_tags_enabled ? { for k, v in /*</box>*/ {
-    avm_git_commit           = "80225f6d5b9b27e0b5b4d0b83ec8a964823f27fe"
-    avm_git_file             = "main.tf"
-    avm_git_last_modified_at = "2023-01-11 06:11:02"
-    avm_git_org              = "Azure"
-    avm_git_repo             = "terraform-azurerm-postgresql"
-    avm_yor_trace            = "371d1c6b-501e-4680-9adb-8aaa394c3014"
-    } /*<box>*/ : replace(k, "avm_", var.tracing_tags_prefix) => v } : {}) /*</box>*/), (/*<box>*/ (var.tracing_tags_enabled ? { for k, v in /*</box>*/ {
-    avm_yor_name = "server"
-  } /*<box>*/ : replace(k, "avm_", var.tracing_tags_prefix) => v } : {}) /*</box>*/))
+  tags                              = var.tags
 
 dynamic "authentication" {
   for_each = var.authentication
