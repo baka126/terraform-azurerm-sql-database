@@ -82,9 +82,9 @@ resource "azurerm_postgresql_flexible_server_firewall_rule" "this" {
   count = var.database_type == "postgresql" && length(var.firewall_rules) > 0 ? length(var.firewall_rules) : 0
 
   name             = format("%s%s", var.firewall_rule_prefix, lookup(var.firewall_rules[count.index], "name", count.index))
-  server_id        = azurerm_postgresql_flexible_server.this[count.index].id
-  start_ip_address = var.firewall_rules[count.index]["start_ip"]
-  end_ip_address   = var.firewall_rules[count.index]["end_ip"]
+  server_id        = azurerm_postgresql_flexible_server.this[0].id
+  start_ip_address = var.firewall_rules[count.index]["start_ip_address"]
+  end_ip_address   = var.firewall_rules[count.index]["end_ip_address"]
 
 }
 
