@@ -1,27 +1,27 @@
 # Azure MSSQL Server
-resource "azurerm_sql_server" "this" {
+resource "azurerm_mssql_server" "this" {
   count = var.database_type == "mssql" ? 1 : 0
 
-  name                         = var.server_name
-  resource_group_name          = var.resource_group_name
-  location                     = var.location
-  version                      = var.server_version
-  administrator_login          = var.administrator_login
-  administrator_login_password = var.administrator_password
-  connection_policy            = var.connection_policy
+  name                                         = var.server_name
+  resource_group_name                          = var.resource_group_name
+  location                                     = var.location
+  version                                      = var.server_version
+  administrator_login                          = var.administrator_login
+  administrator_login_password                 = var.administrator_password
+  connection_policy                            = var.connection_policy
   transparent_data_encryption_key_vault_key_id = var.transparent_data_encryption_key_vault_key_id
-  minimum_tls_version          = var.minimum_tls_version
-  public_network_access_enabled = var.public_network_access_enabled
-  outbound_network_restriction_enabled = var.outbound_network_restriction_enabled
-  primary_user_assigned_identity_id = var.identity != null && length(var.identity) > 0 ? var.identity[0].principal_id : null
-  tags                         = var.tags
+  minimum_tls_version                          = var.minimum_tls_version
+  public_network_access_enabled                = var.public_network_access_enabled
+  outbound_network_restriction_enabled         = var.outbound_network_restriction_enabled
+  primary_user_assigned_identity_id            = var.identity != null && length(var.identity) > 0 ? var.identity[0].principal_id : null
+  tags                                         = var.tags
 
   dynamic "azuread_administrator" {
     for_each = var.azuread_administrator
     content {
-      login                     = azuread_administrator.value.login_username
-      object_id                 = azuread_administrator.value.object_id
-      tenant_id                 = azuread_administrator.value.tenant_id
+      login_username              = azuread_administrator.value.login_username
+      object_id                   = azuread_administrator.value.object_id
+      tenant_id                   = azuread_administrator.value.tenant_id
       azuread_authentication_only = azuread_administrator.value.azuread_authentication_only
     }
   }
@@ -29,8 +29,8 @@ resource "azurerm_sql_server" "this" {
   dynamic "identity" {
     for_each = var.identity
     content {
-      principal_id = identity.value.principal_id
-      tenant_id    = identity.value.tenant_id
+      type         = identity.value.type
+      identity_ids = identity.value.principal_id
     }
   }
 }
@@ -39,18 +39,37 @@ resource "azurerm_sql_server" "this" {
 resource "azurerm_mssql_database" "this" {
   count = var.database_type == "mssql" ? 1 : 0
 
-  name                = var.db_name
-  server_id           = azurerm_sql_server.this[0].id
-  collation           = var.collation
-  create_mode         = var.create_mode
-  sku_name            = var.sku_name
-  max_size_gb         = var.max_size_gb
-  license_type        = var.license_type
-  auto_pause_delay_in_minutes = var.auto_pause_delay_in_minutes
-  min_capacity        = var.min_capacity
-  read_scale          = var.read_scale
-  zone_redundant      = var.zone_redundant
-  tags                = var.tags
+  name                                                       = var.db_name
+  server_id                                                  = azurerm_mssql_server.this[0].id
+  collation                                                  = var.collation
+  create_mode                                                = var.create_mode
+  sku_name                                                   = var.sku_name
+  max_size_gb                                                = var.max_size_gb
+  license_type                                               = var.license_type
+  auto_pause_delay_in_minutes                                = var.auto_pause_delay_in_minutes
+  min_capacity                                               = var.min_capacity
+  read_scale                                                 = var.read_scale
+  zone_redundant                                             = var.zone_redundant
+  creation_source_database_id                                = var.creation_source_database_id
+  elastic_pool_id                                            = var.elastic_pool_id
+  enclave_type                                               = var.enclave_type
+  geo_backup_enabled                                         = var.geo_backup_enabled
+  maintenance_configuration_name                             = var.maintenance_configuration_name
+  ledger_enabled                                             = var.ledger_enabled
+  restore_point_in_time                                      = var.restore_point_in_time
+  recover_database_id                                        = var.recover_database_id
+  recovery_point_id                                          = var.recover_point_id
+  restore_dropped_database_id                                = var.restore_dropped_database_id
+  restore_long_term_retention_backup_id                      = var.restore_long_term_retention_backup_id
+  read_replica_count                                         = var.read_replica_count
+  sample_name                                                = var.sample_name
+  storage_account_type                                       = var.storage_account_type
+  transparent_data_encryption_enabled                        = var.transparent_data_encryption_enabled
+  transparent_data_encryption_key_automatic_rotation_enabled = var.transparent_data_encryption_key_automatic_rotation_enabled
+  secondary_type                                             = var.secondary_type
+
+
+  tags = var.tags
 
   dynamic "long_term_retention_policy" {
     for_each = var.long_term_retention_policy != null ? [var.long_term_retention_policy] : []
@@ -65,8 +84,8 @@ resource "azurerm_mssql_database" "this" {
   dynamic "short_term_retention_policy" {
     for_each = var.short_term_retention_policy != null ? [var.short_term_retention_policy] : []
     content {
-      retention_days             = short_term_retention_policy.value.retention_days
-      backup_interval_in_hours   = short_term_retention_policy.value.backup_interval_in_hours
+      retention_days           = short_term_retention_policy.value.retention_days
+      backup_interval_in_hours = short_term_retention_policy.value.backup_interval_in_hours
     }
   }
 
@@ -86,13 +105,13 @@ resource "azurerm_mssql_database" "this" {
   dynamic "import" {
     for_each = var.import != null ? [var.import] : []
     content {
-      storage_uri                 = import.value.storage_uri
-      storage_key                 = import.value.storage_key
-      storage_key_type            = import.value.storage_key_type
-      administrator_login         = import.value.administrator_login
+      storage_uri                  = import.value.storage_uri
+      storage_key                  = import.value.storage_key
+      storage_key_type             = import.value.storage_key_type
+      administrator_login          = import.value.administrator_login
       administrator_login_password = import.value.administrator_login_password
-      authentication_type         = import.value.authentication_type
-      storage_account_id          = import.value.storage_account_id
+      authentication_type          = import.value.authentication_type
+      storage_account_id           = import.value.storage_account_id
     }
   }
 
@@ -106,14 +125,13 @@ resource "azurerm_mssql_database" "this" {
 }
 
 # Azure MSSQL Firewall Rule
-resource "azurerm_sql_firewall_rule" "this" {
+resource "azurerm_mssql_firewall_rule" "this" {
   count = var.database_type == "mssql" && length(var.firewall_rules) > 0 ? length(var.firewall_rules) : 0
 
-  name                = format("%s%s", var.firewall_rule_prefix, lookup(var.firewall_rules[count.index], "name", count.index))
-  resource_group_name = var.resource_group_name
-  server_name         = azurerm_sql_server.this[0].name
-  start_ip_address    =var.firewall_rules[count.index]["start_ip_address"]
-  end_ip_address      =  var.firewall_rules[count.index]["end_ip_address"]
+  name             = format("%s%s", var.firewall_rule_prefix, lookup(var.firewall_rules[count.index], "name", count.index))
+  server_id        = azurerm_sql_server.this[0].id
+  start_ip_address = var.firewall_rules[count.index]["start_ip_address"]
+  end_ip_address   = var.firewall_rules[count.index]["end_ip_address"]
 }
 
 # Azure MSSQL Active Directory Administrator
@@ -131,20 +149,20 @@ resource "azurerm_sql_active_directory_administrator" "this" {
 resource "azurerm_mssql_database_extended_auditing_policy" "this" {
   count = var.database_type == "mssql" && length(var.extended_auditing_policies) > 0 ? length(var.extended_auditing_policies) : 0
 
-  database_id                           = azurerm_mssql_database.this[0].id
-  enabled                               = var.extended_auditing_policies[count.index].enabled
-  storage_endpoint                      = var.extended_auditing_policies[count.index].storage_endpoint
-  retention_in_days                     = var.extended_auditing_policies[count.index].retention_in_days
-  storage_account_access_key            = var.extended_auditing_policies[count.index].storage_account_access_key
+  database_id                             = azurerm_mssql_database.this[0].id
+  enabled                                 = var.extended_auditing_policies[count.index].enabled
+  storage_endpoint                        = var.extended_auditing_policies[count.index].storage_endpoint
+  retention_in_days                       = var.extended_auditing_policies[count.index].retention_in_days
+  storage_account_access_key              = var.extended_auditing_policies[count.index].storage_account_access_key
   storage_account_access_key_is_secondary = var.extended_auditing_policies[count.index].storage_account_access_key_is_secondary
-  log_monitoring_enabled                = var.extended_auditing_policies[count.index].log_monitoring_enabled
+  log_monitoring_enabled                  = var.extended_auditing_policies[count.index].log_monitoring_enabled
 }
 
 resource "azurerm_mssql_database_vulnerability_assessment_rule_baseline" "this" {
   count = var.database_type == "mssql" && length(var.vulnerability_assessment_rule_baselines) > 0 ? length(var.vulnerability_assessment_rule_baselines) : 0
 
   server_vulnerability_assessment_id = azurerm_mssql_server_vulnerability_assessment.this[count.index].id
-  database_name                      = azurerm_sql_database.this[0].name
+  database_name                      = azurerm_mssql_database.this[0].name
   rule_id                            = var.vulnerability_assessment_rule_baselines[count.index].rule_id
   baseline_name                      = coalesce(var.vulnerability_assessment_rule_baselines[count.index].baseline_name, "default")
 
@@ -154,8 +172,43 @@ resource "azurerm_mssql_database_vulnerability_assessment_rule_baseline" "this" 
       result = baseline_result.value
     }
   }
-  depends_on = [ azurerm_mssql_server_vulnerability_assessment.this ]
+  depends_on = [azurerm_mssql_server_vulnerability_assessment.this]
 }
+
+###azurerm_mssql_elasticpool####
+
+resource "azurerm_mssql_elasticpool" "this" {
+  count = var.database_type == "mssql" && length(var.elasticpool) > 0 ? length(var.elasticpool) : 0
+
+  name                           = var.elasticpool[count.index].name
+  resource_group_name            = var.resource_group_name
+  location                       = var.location
+  server_name                    = azurerm_mssql_server.this[0].name
+  license_type                   = var.elasticpool[count.index].license_type
+  zone_redundant                 = var.elasticpool[count.index].zone_redundant
+  max_size_gb                    = var.max_size_gb
+  maintenance_configuration_name = var.elasticpool[count.index].maintenance_configuration_name
+  enclave_type                   = var.elasticpool[count.index].enclave_type
+  tags                           = var.tags
+
+  dynamic "sku" {
+    for_each = var.elasticpool[count.index].sku != null ? [var.elasticpool[count.index].sku] : []
+    content {
+      name     = sku.value.name
+      tier     = sku.value.tier
+      capacity = sku.value.capacity
+      family   = sku.value.family
+    }
+  }
+  dynamic "per_database_settings" {
+    for_each = var.elasticpool[count.index].per_database_settings != null ? [var.elasticpool[count.index].per_database_settings] : []
+    content {
+      min_capacity = per_database_settings.value.min_capacity
+      max_capacity = per_database_settings.value.max_capacity
+    }
+  }
+}
+
 
 resource "azurerm_mssql_server_vulnerability_assessment" "this" {
   count = var.database_type == "mssql" && length(var.vulnerability_assessments) > 0 ? length(var.vulnerability_assessments) : 0
@@ -173,14 +226,14 @@ resource "azurerm_mssql_server_vulnerability_assessment" "this" {
       emails                    = recurring_scans.value.emails
     }
   }
-  depends_on = [ azurerm_mssql_server_security_alert_policy.this ]
+  depends_on = [azurerm_mssql_server_security_alert_policy.this]
 }
 
 resource "azurerm_mssql_server_security_alert_policy" "this" {
   count = var.database_type == "mssql" && length(var.security_alert_policies) > 0 ? length(var.security_alert_policies) : 0
 
   resource_group_name        = var.resource_group_name
-  server_name                = azurerm_sql_server.this[0].name
+  server_name                = azurerm_mssql_server.this[0].name
   state                      = var.security_alert_policies[count.index].state
   storage_endpoint           = var.security_alert_policies[count.index].storage_endpoint
   storage_account_access_key = var.security_alert_policies[count.index].storage_account_access_key

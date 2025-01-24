@@ -167,7 +167,7 @@ variable "storage_mb" {
 variable "storage_tier" {
   type        = string
   description = "Possible values are P4, P6, P10, P15,P20, P30,P40, P50,P60, P70 or P80"
-  default = null
+  default     = null
 }
 
 variable "tags" {
@@ -177,12 +177,12 @@ variable "tags" {
 }
 
 variable "authentication" {
-  type    = list(object({
+  type = list(object({
     password_auth_enabled         = bool
     active_directory_auth_enabled = bool
     tenant_id                     = string
   }))
-  default = []
+  default     = []
   description = "Authentication configuration, known in the API as Server Active Directory Administrator details"
 
 }
@@ -218,21 +218,21 @@ variable "high_availability" {
 }
 
 variable "identity" {
-  type    = list(object({
+  type = list(object({
     type         = string
     identity_ids = list(string)
   }))
-  default = []
+  default     = []
   description = "Identity configuration, For type The only possible value is UserAssigned"
 }
 
 variable "maintenance_window" {
-  type    = list(object({
+  type = list(object({
     day_of_week  = number
     start_hour   = number
     start_minute = number
   }))
-  default = []
+  default     = []
   description = "Maintenance window configuration, known in the API as Server Maintenance Window details"
 }
 

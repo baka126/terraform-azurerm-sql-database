@@ -7,14 +7,14 @@ variable "resource_group_name" {
 variable "administrator_login" {
   type        = string
   description = "The Administrator Login for the PostgreSQL Server. Changing this forces a new resource to be created."
-  default = null
+  default     = null
 }
 
 variable "administrator_password" {
   type        = string
   description = "The Password associated with the administrator_login for the PostgreSQL Server."
   sensitive   = true
-  default = null
+  default     = null
 }
 
 variable "server_name" {
@@ -42,45 +42,59 @@ variable "connection_policy" {
   type        = string
   default     = "Default"
   description = " The connection policy the server will use. Possible values are Default, Proxy, and Redirect"
-  
+
 }
 
 variable "azuread_administrator" {
-  type    = list(object({
-    login_username = string
-    object_id      = string
-    tenant_id      = string
+  type = list(object({
+    login_username              = string
+    object_id                   = string
+    tenant_id                   = string
     azuread_authentication_only = optional(bool, false) #  When true, the administrator_login and administrator_login_password properties can be omitted.
   }))
-  default = []
+  default     = []
   description = "Authentication configuration, known in the API as Server Active Directory Administrator details"
 }
 
 variable "identity" {
-  type    = list(object({
-    principal_id         = string
-    tenant_id = string
+  type = list(object({
+    principal_id = string
+    tenant_id    = string
   }))
-  default = []
+  default     = []
   description = "Identity configuration, For type The only possible value is UserAssigned"
 }
 
 variable "transparent_data_encryption_key_vault_key_id" {
   type        = string
   default     = null
-  description = "The ID of the Azure Key Vault key used to encrypt the data at rest. (e.g. 'https://<YourVaultName>.vault.azure.net/keys/<YourKeyName>/<YourKeyVersion>) to be used as the customer-managed key to encrypt the data at rest for the server."  
+  description = "The ID of the Azure Key Vault key used to encrypt the data at rest. (e.g. 'https://<YourVaultName>.vault.azure.net/keys/<YourKeyName>/<YourKeyVersion>) to be used as the customer-managed key to encrypt the data at rest for the server."
+}
+
+variable "transparent_data_encryption_enabled" {
+  type        = bool
+  default     = true
+  description = "Whether or not transparent data encryption is enabled. Defaults to false."
+
+}
+
+variable "transparent_data_encryption_key_automatic_rotation_enabled" {
+  type        = bool
+  default     = true
+  description = "Whether or not automatic key rotation is enabled. Defaults to true."
+
 }
 
 variable "minimum_tls_version" {
   type        = string
   default     = "1.2"
   description = "The minimum supported TLS version. Possible values are 1.0, 1.1, and 1.2"
-  
+
 }
 
 variable "outbound_network_restriction_enabled" {
-  type = bool
-  default = false
+  type        = bool
+  default     = false
   description = "Whether outbound network traffic is restricted for this server. Defaults to false"
 }
 
@@ -88,14 +102,14 @@ variable "primary_user_assigned_identity_id" {
   type        = string
   default     = null
   description = "The id of the primary user assigned identity"
-  
+
 }
 
 variable "public_network_access_enabled" {
   type        = bool
   default     = true
   description = "Whether or not public network access is allowed for this server. Defaults to true."
-  
+
 }
 ####azure mssql database####
 variable "location" {
@@ -115,21 +129,138 @@ variable "collation" {
 }
 
 variable "create_mode" {
-  description = "The create mode of the database."
+  description = " The create mode of the database. Possible values are Copy, Default, OnlineSecondary, PointInTimeRestore, Recovery, Restore, RestoreExternalBackup, RestoreExternalBackupSecondary, RestoreLongTermRetentionBackup and Secondary."
   type        = string
   default     = "Default"
 }
 
-variable "sku_name" {
-  description = "Specifies the name of the SKU used by the database."
+variable "elastic_pool_id" {
+  description = " Specifies the ID of the elastic pool containing this database."
   type        = string
-  default     = "S0"
+  default     = null
+}
+
+variable "enclave_type" {
+  description = "Possible values are Default or VBS"
+  type        = string
+  default     = "Default"
+}
+
+variable "geo_backup_enabled" {
+  description = "Specifies if geo backup is enabled for this database."
+  type        = bool
+  default     = true
+}
+
+variable "maintenance_configuration_name" {
+  description = "The name of the Public Maintenance Configuration window to apply to the database. "
+  type        = string
+  default     = "SQL_Default"
+  validation {
+    condition     = var.elastic_pool_id == null
+    error_message = "maintenance_configuration_name is only applicable if elastic_pool_id is not set."
+  }
+}
+
+variable "restore_point_in_time" {
+  description = "Specifies the point in time (ISO8601 format) of the source database that will be restored to create the new database."
+  type        = string
+  default     = null
+  validation {
+    condition     = var.create_mode == "PointInTimeRestore"
+    error_message = "restore_point_in_time is only applicable if create_mode is PointInTimeRestore."
+  }
+}
+
+variable "recover_database_id" {
+  description = "The ID of the database to be recovered. This property is only applicable when the create_mode is Recovery."
+  type        = string
+  default     = null
+  validation {
+    condition     = var.create_mode == "Recovery"
+    error_message = "recover_database_id is only applicable if create_mode is Recovery."
+  }
+}
+
+variable "recover_point_id" {
+  description = "The ID of the Recovery Services Recovery Point Id to be restored. This property is only applicable when the create_mode is Recovery."
+  type        = string
+  default     = null
+  validation {
+    condition     = var.create_mode == "Recovery"
+    error_message = "restore_point_id is only applicable if create_mode is Recovery."
+  }
+}
+
+variable "restore_dropped_database_id" {
+  description = "The ID of the database to be restored. This property is only applicable when the create_mode is Restore."
+  type        = string
+  default     = null
+  validation {
+    condition     = var.create_mode == "Restore"
+    error_message = "restore_dropped_database_id is only applicable if create_mode is Restore."
+  }
+}
+
+variable "restore_long_term_retention_backup_id" {
+  description = "The ID of the long term retention backup to be restored. This property is only applicable when the create_mode is RestoreLongTermRetentionBackup."
+  type        = string
+  default     = null
+  validation {
+    condition     = var.create_mode == "RestoreLongTermRetentionBackup"
+    error_message = "restore_long_term_retention_backup_id is only applicable if create_mode is RestoreLongTermRetentionBackup."
+  }
+}
+
+variable "read_replica_count" {
+  description = "The number of readonly secondary replicas associated with the database to which readonly application intent connections may be routed. This property is only settable for Hyperscale edition databases."
+  type        = number
+  default     = null
+}
+
+variable "sample_name" {
+  description = "Specifies the name of the sample schema to apply when creating this database. Possible value is AdventureWorksLT."
+  type        = string
+  default     = null
+  validation {
+    condition     = var.sample_name == "AdventureWorksLT"
+    error_message = "sample_name is only applicable if sample_name is AdventureWorksLT."
+  }
+}
+
+variable "ledger_enabled" {
+  description = "A boolean that specifies if this is a ledger database. Defaults to false. Changing this forces a new resource to be created."
+  type        = bool
+  default     = false
+}
+
+variable "creation_source_database_id" {
+  description = "The ID of the source database from which to create the new database. This should only be used for databases with create_mode values that use another database as reference. Changing this forces a new resource to be created."
+  type        = string
+  default     = null
+}
+variable "sku_name" {
+  description = "Specifies the name of the SKU used by the database. For example, GP_S_Gen5_2,HS_Gen4_1,BC_Gen5_2, ElasticPool, Basic,S0, P2 ,DW100c, DS100."
+  type        = string
+  default     = null
+}
+
+variable "storage_account_type" {
+  description = "Specifies the storage account type used to store backups for this database. Possible values are Geo, GeoZone, Local and Zone. Defaults to Geo  ."
+  type        = string
+  default     = "GEO"
+}
+
+variable "secondary_type" {
+  description = "How do you want your replica to be made? Valid values include Geo and Named. Defaults to Geo. "
+  type        = string
+  default     = "Geo"
 }
 
 variable "max_size_gb" {
   description = "The max size of the database in gigabytes."
   type        = number
-  default     = 2
+  default     = 20
 }
 
 variable "license_type" {
@@ -287,13 +418,13 @@ variable "tags" {
 variable "extended_auditing_policies" {
   description = "List of extended auditing policies for MSSQL databases."
   type = list(object({
-    database_id                           = string
-    enabled                               = optional(bool, true)
-    storage_endpoint                      = optional(string)
-    retention_in_days                     = optional(number, 0)
-    storage_account_access_key            = optional(string)
+    database_id                             = string
+    enabled                                 = optional(bool, true)
+    storage_endpoint                        = optional(string)
+    retention_in_days                       = optional(number, 0)
+    storage_account_access_key              = optional(string)
     storage_account_access_key_is_secondary = optional(bool, false)
-    log_monitoring_enabled                = optional(bool, true)
+    log_monitoring_enabled                  = optional(bool, true)
   }))
   default = []
 }
@@ -340,4 +471,31 @@ variable "security_alert_policies" {
   }))
   default     = []
   description = "List of security alert policies to configure for MS SQL Server."
+}
+
+####elasticpool###
+variable "elasticpool" {
+  type = list(object({
+    name                           = string
+    resource_group_name            = string
+    location                       = string
+    server_name                    = string
+    license_type                   = string
+    max_size_gb                    = number
+    zone_redundant                 = bool
+    maintenance_configuration_name = string
+    enclave_type                   = string
+    sku = optional(object({
+      name     = string
+      tier     = string
+      capacity = number
+      family   = string
+    }))
+    per_database_settings = optional(object({
+      min_capacity = number
+      max_capacity = number
+    }))
+  }))
+  default     = []
+  description = "values for elasticpool"
 }
