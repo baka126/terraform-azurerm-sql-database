@@ -128,11 +128,31 @@ resource "azurerm_mssql_database" "this" {
 resource "azurerm_mssql_firewall_rule" "this" {
   count = var.database_type == "mssql" && length(var.firewall_rules) > 0 ? length(var.firewall_rules) : 0
 
-  name             = format("%s%s", var.firewall_rule_prefix, lookup(var.firewall_rules[count.index], "name", count.index))
-  server_id        = azurerm_sql_server.this[0].id
-  start_ip_address = var.firewall_rules[count.index]["start_ip_address"]
-  end_ip_address   = var.firewall_rules[count.index]["end_ip_address"]
+  name              = var.firewall_rules[count.index].name
+  server_id         = azurerm_mssql_server.this[0].id
+  start_ip_address  = var.firewall_rules[count.index].start_ip_address
+  end_ip_address    = var.firewall_rules[count.index].end_ip_address
 }
+
+###mssql_job##
+resource "azurerm_mssql_job" "this" {
+  count = var.database_type == "mssql" && length(var.jobs) > 0 ? length(var.jobs) : 0
+
+  name         = var.jobs[count.index].name
+  job_agent_id = var.jobs[count.index].job_agent_id
+  description  = var.jobs[count.index].description
+}
+
+###mssql_job_agent##
+resource "azurerm_mssql_job_agent" "this" {
+  count = var.database_type == "mssql" && length(var.job_agents) > 0 ? length(var.job_agents) : 0
+
+  name        = var.job_agents[count.index].name
+  location = var.job_agents[count.index].location != "" ? var.job_agents[count.index].location : var.location
+  database_id = azurerm_mssql_database.this[0].id
+  tags        = var.tags
+}
+
 
 # Azure MSSQL Active Directory Administrator
 resource "azurerm_sql_active_directory_administrator" "this" {
@@ -141,7 +161,7 @@ resource "azurerm_sql_active_directory_administrator" "this" {
   login                       = var.sql_aad_administrator.login
   object_id                   = var.sql_aad_administrator.object_id
   resource_group_name         = var.resource_group_name
-  server_name                 = azurerm_sql_server.this[0].name
+  server_name                 = azurerm_mssql_server.this[0].name
   tenant_id                   = var.sql_aad_administrator.tenant_id
   azuread_authentication_only = var.sql_aad_administrator.azuread_authentication_only
 }
@@ -205,6 +225,32 @@ resource "azurerm_mssql_elasticpool" "this" {
     content {
       min_capacity = per_database_settings.value.min_capacity
       max_capacity = per_database_settings.value.max_capacity
+    }
+  }
+}
+
+####failover_group###
+resource "azurerm_mssql_failover_group" "this" {
+  count = var.database_type == "mssql" && length(var.failover_groups) > 0 ? length(var.failover_groups) : 0
+
+  name                                     = var.failover_groups[count.index].name
+  server_id                                = var.failover_groups[count.index].server_id
+  databases                                = var.failover_groups[count.index].databases
+  readonly_endpoint_failover_policy_enabled = var.failover_groups[count.index].readonly_endpoint_failover_policy_enabled
+  tags                                     = var.tags
+
+  dynamic "partner_server" {
+    for_each = [var.failover_groups[count.index].partner_server]
+    content {
+      id = partner_server.value.id
+    }
+  }
+
+  dynamic "read_write_endpoint_failover_policy" {
+    for_each = [var.failover_groups[count.index].read_write_endpoint_failover_policy]
+    content {
+      mode          = read_write_endpoint_failover_policy.value.mode
+      grace_minutes = read_write_endpoint_failover_policy.value.grace_minutes
     }
   }
 }

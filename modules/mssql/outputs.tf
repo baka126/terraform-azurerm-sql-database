@@ -38,3 +38,25 @@ output "mssql_server_vulnerability_assessment_ids" {
   value       = azurerm_mssql_server_vulnerability_assessment.this[*].id
   description = "The IDs of the MS SQL Server Vulnerability Assessments."
 }
+
+output "azurerm_mssql_elasticpool_id" {
+  value       = azurerm_mssql_elasticpool.this.id
+  description = "The ID of the MS SQL Server Elastic Pool." 
+}
+
+
+output "failover_group_ids" {
+  value       = azurerm_mssql_failover_group.this[*].id
+  description = "The IDs of the created MSSQL Failover Groups."
+}
+
+
+output "firewall_rule_ids" {
+  value       = azurerm_mssql_firewall_rule.this[*].id
+  description = "The IDs of the created MSSQL Firewall Rules."
+}
+
+output "job_ids" {
+  value       = azurerm_mssql_job.this[*].id
+  description = "The IDs of the created MSSQL Elastic Jobs."
+}

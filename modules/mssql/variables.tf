@@ -355,25 +355,17 @@ variable "identity" {
 }
 
 ############azure firewall rule############
-variable "firewall_rule_prefix" {
-  type        = string
-  default     = "firewall-"
-  description = "Specifies prefix for firewall rule names."
-}
-
 variable "firewall_rules" {
-  type        = list(map(string))
+  type = list(object({
+    name             = string
+    server_id        = string
+    start_ip_address = string
+    end_ip_address   = string
+  }))
   default     = []
-  description = "The list of maps, describing firewall rules. Valid map items: name, start_ip, end_ip."
+  description = "Values for configuring MSSQL Firewall Rules"
 }
 
-
-###########
-variable "end_ip_address" {
-  type        = string
-  default     = "0.0.0.0"
-  description = "Defines the end IP address used in your database firewall rule."
-}
 
 variable "service_objective_name" {
   type        = string
@@ -498,4 +490,46 @@ variable "elasticpool" {
   }))
   default     = []
   description = "values for elasticpool"
+}
+
+####failover_group###
+variable "failover_groups" {
+  type = list(object({
+    name                                     = string
+    server_id                                = string
+    databases                                = optional(set(string))
+    readonly_endpoint_failover_policy_enabled = optional(bool, false)
+    partner_server = object({
+      id = string
+    })
+    read_write_endpoint_failover_policy = object({
+      mode          = string # Possible values: Automatic, Manual
+      grace_minutes = optional(number) # Required only when mode is Automatic
+    })
+  }))
+  default     = []
+  description = "Values for configuring MSSQL Failover Groups"
+}
+
+###mssql_jobs###
+variable "jobs" {
+  type = list(object({
+    name         = string
+    job_agent_id = string
+    description  = optional(string)
+  }))
+  default     = []
+  description = "Values for configuring MSSQL Elastic Jobs"
+}
+
+###mssql_job_agents###
+variable "job_agents" {
+  type = list(object({
+    name        = string
+    location    = string
+    database_id = string
+    tags        = optional(map(string), {})
+  }))
+  default     = []
+  description = "Values for configuring MSSQL Elastic Job Agents"
 }
