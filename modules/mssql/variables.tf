@@ -611,3 +611,14 @@ variable "microsoft_support_auditing_policies" {
   default     = []
   description = "Configuration for MSSQL Server Microsoft Support Auditing Policies"
 }
+
+variable "transparent_data_encryption" {
+  type = list(object({
+    server_id              = string  # The ID of the MSSQL server to apply transparent data encryption
+    key_vault_key_id       = string  # Optional: The Key Vault Key ID for customer-managed keys
+    managed_hsm_key_id     = string  # Optional: The Managed HSM Key ID for customer-managed keys
+    auto_rotation_enabled  = bool    # Optional: Whether to enable automatic key rotation (default: false)
+  }))
+  default     = []
+  description = "Configuration for MSSQL Server Transparent Data Encryption (TDE)"
+}

@@ -96,4 +96,12 @@ output "mssql_server_extended_auditing_policy_ids" {
   value       = azurerm_mssql_server_extended_auditing_policy.this[*].id
 }
 
+output "mssql_server_microsoft_support_auditing_policy_ids" {
+  description = "The IDs of the created MSSQL Server Microsoft Support Auditing Policies."
+  value       = azurerm_mssql_server_microsoft_support_auditing_policy.this[*].id
+}
 
+output "mssql_server_tde_ids" {
+  description = "The IDs of the created MSSQL Server Transparent Data Encryption resources."
+  value       = azurerm_mssql_server_transparent_data_encryption.this[*].id
+}

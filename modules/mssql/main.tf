@@ -353,3 +353,12 @@ resource "azurerm_mssql_server_microsoft_support_auditing_policy" "this" {
   log_monitoring_enabled               = var.microsoft_support_auditing_policies[count.index].log_monitoring_enabled != null ? var.microsoft_support_auditing_policies[count.index].log_monitoring_enabled : true
   storage_account_subscription_id     = var.microsoft_support_auditing_policies[count.index].storage_account_subscription_id
 }
+
+resource "azurerm_mssql_server_transparent_data_encryption" "this" {
+  count = var.database_type == "mssql" && length(var.transparent_data_encryption) > 0 ? length(var.transparent_data_encryption) : 0
+
+  server_id               = var.transparent_data_encryption[count.index].server_id != "" ? var.transparent_data_encryption[count.index].server_id : azurerm_mssql_server.this[0].id
+  key_vault_key_id        = var.transparent_data_encryption[count.index].key_vault_key_id
+  managed_hsm_key_id      = var.transparent_data_encryption[count.index].managed_hsm_key_id
+  auto_rotation_enabled   = var.transparent_data_encryption[count.index].auto_rotation_enabled != null ? var.transparent_data_encryption[count.index].auto_rotation_enabled : false
+}
