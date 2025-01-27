@@ -533,3 +533,40 @@ variable "job_agents" {
   default     = []
   description = "Values for configuring MSSQL Elastic Job Agents"
 }
+
+###mssql_job_credits###
+variable "job_credentials" {
+  type = list(object({
+    name         = string
+    job_agent_id = string
+    username     = string
+    password     = string
+  }))
+  default     = []
+  description = "Values for configuring MSSQL Elastic Job Credentials"
+}
+
+###mssql_job_schedules###
+variable "job_schedules" {
+  type = list(object({
+    job_id     = string  # The ID of the Elastic Job
+    type       = string  # Type of schedule, e.g., "Once" or "Recurring"
+    enabled    = bool    # Whether the schedule is enabled
+    start_time = string  # Start time in RFC3339 format
+    end_time   = string  # End time in RFC3339 format (optional)
+    interval   = string  # Interval in ISO8601 duration format (e.g., "PT5M")
+  }))
+  default     = []
+  description = "Configuration for MSSQL Elastic Job Schedules"
+}
+
+###mssql_outbound_firewall_rules###
+variable "outbound_firewall_rules" {
+  type = list(object({
+    name      = string  # Fully Qualified Domain Name (FQDN) for the outbound rule
+    server_id = string  # The resource ID of the MSSQL server
+  }))
+  default     = []
+  description = "Configuration for MSSQL SQL Outbound Firewall Rules"
+}
+

@@ -60,3 +60,23 @@ output "job_ids" {
   value       = azurerm_mssql_job.this[*].id
   description = "The IDs of the created MSSQL Elastic Jobs."
 }
+
+output "job_agent_ids" {
+  value       = azurerm_mssql_job_agent.this[*].id
+  description = "The IDs of the created MSSQL Elastic Job Agents."
+}
+
+output "job_credential_ids" {
+  value       = azurerm_mssql_job_credential.this[*].id
+  description = "The IDs of the created MSSQL Elastic Job Credentials."
+}
+
+output "mssql_job_schedule_ids" {
+  description = "The IDs of the created MSSQL Job Schedules."
+  value       = azurerm_mssql_job_schedule.this[*].id
+}
+
+output "mssql_outbound_firewall_rule_ids" {
+  description = "The IDs of the created MSSQL Outbound Firewall Rules."
+  value       = azurerm_mssql_outbound_firewall_rule.this[*].id
+}

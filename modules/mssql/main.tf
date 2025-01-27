@@ -139,7 +139,7 @@ resource "azurerm_mssql_job" "this" {
   count = var.database_type == "mssql" && length(var.jobs) > 0 ? length(var.jobs) : 0
 
   name         = var.jobs[count.index].name
-  job_agent_id = var.jobs[count.index].job_agent_id
+  job_agent_id = var.jobs[count.index].job_agent_id != "" ? var.jobs[count.index].job_agent_id : azurerm_mssql_job_agent.this[0].id
   description  = var.jobs[count.index].description
 }
 
@@ -151,6 +151,36 @@ resource "azurerm_mssql_job_agent" "this" {
   location = var.job_agents[count.index].location != "" ? var.job_agents[count.index].location : var.location
   database_id = azurerm_mssql_database.this[0].id
   tags        = var.tags
+}
+
+###mssql_job_credential##
+resource "azurerm_mssql_job_credential" "this" {
+  count = var.database_type == "mssql" && length(var.job_credentials) > 0 ? length(var.job_credentials) : 0
+
+  name         = var.job_credentials[count.index].name
+  job_agent_id = var.job_credentials[count.index].job_agent_id != "" ? var.job_credentials[count.index].job_agent_id : azurerm_mssql_job_agent.this[0].id
+  username     = var.job_credentials[count.index].username
+  password     = var.job_credentials[count.index].password
+}
+
+###azurerm_mssql_job_schedule ###
+resource "azurerm_mssql_job_schedule" "this" {
+  count = var.database_type == "mssql" && length(var.job_schedules) > 0 ? length(var.job_schedules) : 0
+
+  job_id     = var.job_schedules[count.index].job_id != "" ? var.job_schedules[count.index].job_id : azurerm_mssql_job.this[0].id
+  type       = var.job_schedules[count.index].type
+  enabled    = var.job_schedules[count.index].enabled
+  start_time = var.job_schedules[count.index].start_time
+  end_time   = var.job_schedules[count.index].end_time
+  interval   = var.job_schedules[count.index].interval
+}
+
+###azurerm_mssql_outbound_firewall_rule ###
+resource "azurerm_mssql_outbound_firewall_rule" "this" {
+  count = var.database_type == "mssql" && length(var.outbound_firewall_rules) > 0 ? length(var.outbound_firewall_rules) : 0
+
+  name      = var.outbound_firewall_rules[count.index].name
+  server_id = var.outbound_firewall_rules[count.index].server_id != ""? var.outbound_firewall_rules[count.index].server_id : azurerm_mssql_server.this[0].id
 }
 
 
