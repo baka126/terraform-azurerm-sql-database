@@ -90,3 +90,10 @@ output "mssql_server_dns_alias_dns_records" {
   description = "The fully qualified DNS records for the created MSSQL Server DNS Aliases."
   value       = azurerm_mssql_server_dns_alias.this[*].dns_record
 }
+
+output "mssql_server_extended_auditing_policy_ids" {
+  description = "The IDs of the created MSSQL Server Extended Auditing Policies."
+  value       = azurerm_mssql_server_extended_auditing_policy.this[*].id
+}
+
+

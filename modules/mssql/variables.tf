@@ -407,7 +407,7 @@ variable "tags" {
 }
 
 #####azurerm_mssql_database_extended_auditing_policy#######
-variable "extended_auditing_policies" {
+variable "database_extended_auditing_policies" {
   description = "List of extended auditing policies for MSSQL databases."
   type = list(object({
     database_id                             = string
@@ -578,4 +578,36 @@ variable "dns_aliases" {
   }))
   default     = []
   description = "Configuration for MSSQL Server DNS Aliases"
+}
+
+###mssql_server_extended_auditing_policies###
+variable "extended_auditing_policies" {
+  type = list(object({
+    server_id                             = string  # The resource ID of the SQL Server
+    enabled                               = bool    # Whether to enable the extended auditing policy (optional, default: true)
+    storage_endpoint                      = string  # The blob storage endpoint
+    retention_in_days                     = number  # The number of days to retain logs (optional, default: 0)
+    storage_account_access_key            = string  # The storage account access key (optional)
+    storage_account_access_key_is_secondary = bool  # Whether to use the secondary key for storage account access (optional)
+    log_monitoring_enabled                = bool    # Enable monitoring in Azure Monitor (optional, default: true)
+    storage_account_subscription_id       = string  # The subscription ID for the storage account (optional)
+    predicate_expression                 = string  # The condition for the audit (optional)
+    audit_actions_and_groups             = list(string)  # The list of actions and action groups to audit (optional)
+  }))
+  default     = []
+  description = "Configuration for MSSQL Server Extended Auditing Policies"
+}
+
+###mssql_server_microsoft_support_auditing_policies###
+variable "microsoft_support_auditing_policies" {
+  type = list(object({
+    server_id                    = string   # The resource ID of the SQL Server
+    enabled                      = bool     # Whether to enable the auditing policy (optional, default: true)
+    blob_storage_endpoint        = string   # The blob storage endpoint to store auditing logs (optional)
+    storage_account_access_key  = string   # The storage account access key (optional)
+    log_monitoring_enabled       = bool     # Enable logging to Azure Monitor (optional, default: true)
+    storage_account_subscription_id = string # The subscription ID for the storage account (optional)
+  }))
+  default     = []
+  description = "Configuration for MSSQL Server Microsoft Support Auditing Policies"
 }

@@ -205,15 +205,15 @@ resource "azurerm_sql_active_directory_administrator" "this" {
 }
 
 resource "azurerm_mssql_database_extended_auditing_policy" "this" {
-  count = var.database_type == "mssql" && length(var.extended_auditing_policies) > 0 ? length(var.extended_auditing_policies) : 0
+  count = var.database_type == "mssql" && length(var.database_extended_auditing_policies) > 0 ? length(var.database_extended_auditing_policies) : 0
 
   database_id                             = azurerm_mssql_database.this[0].id
-  enabled                                 = var.extended_auditing_policies[count.index].enabled
-  storage_endpoint                        = var.extended_auditing_policies[count.index].storage_endpoint
-  retention_in_days                       = var.extended_auditing_policies[count.index].retention_in_days
-  storage_account_access_key              = var.extended_auditing_policies[count.index].storage_account_access_key
-  storage_account_access_key_is_secondary = var.extended_auditing_policies[count.index].storage_account_access_key_is_secondary
-  log_monitoring_enabled                  = var.extended_auditing_policies[count.index].log_monitoring_enabled
+  enabled                                 = var.database_extended_auditing_policies[count.index].enabled
+  storage_endpoint                        = var.database_extended_auditing_policies[count.index].storage_endpoint
+  retention_in_days                       = var.database_extended_auditing_policies[count.index].retention_in_days
+  storage_account_access_key              = var.database_extended_auditing_policies[count.index].storage_account_access_key
+  storage_account_access_key_is_secondary = var.database_extended_auditing_policies[count.index].storage_account_access_key_is_secondary
+  log_monitoring_enabled                  = var.database_extended_auditing_policies[count.index].log_monitoring_enabled
 }
 
 resource "azurerm_mssql_database_vulnerability_assessment_rule_baseline" "this" {
@@ -233,7 +233,6 @@ resource "azurerm_mssql_database_vulnerability_assessment_rule_baseline" "this" 
   depends_on = [azurerm_mssql_server_vulnerability_assessment.this]
 }
 
-###azurerm_mssql_elasticpool####
 
 resource "azurerm_mssql_elasticpool" "this" {
   count = var.database_type == "mssql" && length(var.elasticpool) > 0 ? length(var.elasticpool) : 0
@@ -325,4 +324,32 @@ resource "azurerm_mssql_server_security_alert_policy" "this" {
   email_account_admins       = var.security_alert_policies[count.index].email_account_admins
   email_addresses            = var.security_alert_policies[count.index].email_addresses
   retention_days             = var.security_alert_policies[count.index].retention_days
+}
+
+####mssql_extended_auditing_policy###
+resource "azurerm_mssql_server_extended_auditing_policy" "this" {
+  count = var.database_type == "mssql" && length(var.extended_auditing_policies) > 0 ? length(var.extended_auditing_policies) : 0
+
+  server_id                               = var.extended_auditing_policies[count.index].server_id != "" ? var.extended_auditing_policies[count.index].server_id : azurerm_mssql_server.this[0].id
+  enabled                                 = var.extended_auditing_policies[count.index].enabled != null ? var.extended_auditing_policies[count.index].enabled : true
+  storage_endpoint                        = var.extended_auditing_policies[count.index].storage_endpoint
+  retention_in_days                       = var.extended_auditing_policies[count.index].retention_in_days != null ? var.extended_auditing_policies[count.index].retention_in_days : 0
+  storage_account_access_key              = var.extended_auditing_policies[count.index].storage_account_access_key
+  storage_account_access_key_is_secondary = var.extended_auditing_policies[count.index].storage_account_access_key_is_secondary
+  log_monitoring_enabled                  = var.extended_auditing_policies[count.index].log_monitoring_enabled != null ? var.extended_auditing_policies[count.index].log_monitoring_enabled : true
+  storage_account_subscription_id         = var.extended_auditing_policies[count.index].storage_account_subscription_id
+  predicate_expression                   = var.extended_auditing_policies[count.index].predicate_expression
+  audit_actions_and_groups               = var.extended_auditing_policies[count.index].audit_actions_and_groups
+}
+
+####mssql_microsoft_support_auditing_policy###
+resource "azurerm_mssql_server_microsoft_support_auditing_policy" "this" {
+  count = var.database_type == "mssql" && length(var.microsoft_support_auditing_policies) > 0 ? length(var.microsoft_support_auditing_policies) : 0
+
+  server_id                           = var.microsoft_support_auditing_policies[count.index].server_id != "" ? var.microsoft_support_auditing_policies[count.index].server_id : azurerm_mssql_server.this[0].id
+  enabled                              = var.microsoft_support_auditing_policies[count.index].enabled != null ? var.microsoft_support_auditing_policies[count.index].enabled : true
+  blob_storage_endpoint                = var.microsoft_support_auditing_policies[count.index].blob_storage_endpoint
+  storage_account_access_key          = var.microsoft_support_auditing_policies[count.index].storage_account_access_key
+  log_monitoring_enabled               = var.microsoft_support_auditing_policies[count.index].log_monitoring_enabled != null ? var.microsoft_support_auditing_policies[count.index].log_monitoring_enabled : true
+  storage_account_subscription_id     = var.microsoft_support_auditing_policies[count.index].storage_account_subscription_id
 }
