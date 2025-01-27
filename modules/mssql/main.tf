@@ -66,6 +66,7 @@ resource "azurerm_mssql_database" "this" {
   storage_account_type                                       = var.storage_account_type
   transparent_data_encryption_enabled                        = var.transparent_data_encryption_enabled
   transparent_data_encryption_key_automatic_rotation_enabled = var.transparent_data_encryption_key_automatic_rotation_enabled
+  transparent_data_encryption_key_vault_key_id               = var.transparent_data_encryption_key_vault_key_id
   secondary_type                                             = var.secondary_type
 
 
@@ -192,17 +193,17 @@ resource "azurerm_mssql_server_dns_alias" "this" {
 }
 
 
-# Azure MSSQL Active Directory Administrator
-resource "azurerm_sql_active_directory_administrator" "this" {
-  count = var.database_type == "mssql" && length(var.active_directory_administrators) > 0 ? length(var.active_directory_administrators) : 0
+# # Azure MSSQL Active Directory Administrator
+# resource "azurerm_sql_active_directory_administrator" "this" {
+#   count = var.database_type == "mssql" && length(var.active_directory_administrators) > 0 ? length(var.active_directory_administrators) : 0
 
-  login                       = var.sql_aad_administrator.login
-  object_id                   = var.sql_aad_administrator.object_id
-  resource_group_name         = var.resource_group_name
-  server_name                 = azurerm_mssql_server.this[0].name
-  tenant_id                   = var.sql_aad_administrator.tenant_id
-  azuread_authentication_only = var.sql_aad_administrator.azuread_authentication_only
-}
+#   login                       = var.sql_aad_administrator.login
+#   object_id                   = var.sql_aad_administrator.object_id
+#   resource_group_name         = var.resource_group_name
+#   server_name                 = azurerm_mssql_server.this[0].name
+#   tenant_id                   = var.sql_aad_administrator.tenant_id
+#   azuread_authentication_only = var.sql_aad_administrator.azuread_authentication_only
+# }
 
 resource "azurerm_mssql_database_extended_auditing_policy" "this" {
   count = var.database_type == "mssql" && length(var.database_extended_auditing_policies) > 0 ? length(var.database_extended_auditing_policies) : 0

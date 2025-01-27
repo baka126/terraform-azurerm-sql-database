@@ -56,14 +56,6 @@ variable "azuread_administrator" {
   description = "Authentication configuration, known in the API as Server Active Directory Administrator details"
 }
 
-variable "identity" {
-  type = list(object({
-    principal_id = string
-    tenant_id    = string
-  }))
-  default     = []
-  description = "Identity configuration, For type The only possible value is UserAssigned"
-}
 
 variable "transparent_data_encryption_key_vault_key_id" {
   type        = string
@@ -80,7 +72,7 @@ variable "transparent_data_encryption_enabled" {
 
 variable "transparent_data_encryption_key_automatic_rotation_enabled" {
   type        = bool
-  default     = true
+  default     = false
   description = "Whether or not automatic key rotation is enabled. Defaults to true."
 
 }
@@ -98,12 +90,6 @@ variable "outbound_network_restriction_enabled" {
   description = "Whether outbound network traffic is restricted for this server. Defaults to false"
 }
 
-variable "primary_user_assigned_identity_id" {
-  type        = string
-  default     = null
-  description = "The id of the primary user assigned identity"
-
-}
 
 variable "public_network_access_enabled" {
   type        = bool
@@ -157,7 +143,7 @@ variable "maintenance_configuration_name" {
   type        = string
   default     = "SQL_Default"
   validation {
-    condition     = var.elastic_pool_id == null
+    condition     = var.elastic_pool_id == null || (var.elastic_pool_id != null && var.maintenance_configuration_name != "")
     error_message = "maintenance_configuration_name is only applicable if elastic_pool_id is not set."
   }
 }
@@ -167,8 +153,8 @@ variable "restore_point_in_time" {
   type        = string
   default     = null
   validation {
-    condition     = var.create_mode == "PointInTimeRestore"
-    error_message = "restore_point_in_time is only applicable if create_mode is PointInTimeRestore."
+    condition     = var.create_mode != "PointInTimeRestore" || (var.create_mode == "PointInTimeRestore" && var.restore_point_in_time != null)
+    error_message = "restore_point_in_time is only applicable if create_mode is PointInTimeRestore and must not be null when create_mode is PointInTimeRestore."
   }
 }
 
@@ -177,8 +163,8 @@ variable "recover_database_id" {
   type        = string
   default     = null
   validation {
-    condition     = var.create_mode == "Recovery"
-    error_message = "recover_database_id is only applicable if create_mode is Recovery."
+    condition     = var.create_mode != "Recovery" || (var.create_mode == "Recovery" && var.recover_database_id != null)
+    error_message = "recover_database_id is only applicable if create_mode is Recovery and must not be null when create_mode is Recovery."
   }
 }
 
@@ -187,7 +173,7 @@ variable "recover_point_id" {
   type        = string
   default     = null
   validation {
-    condition     = var.create_mode == "Recovery"
+    condition     = var.create_mode != "Recovery" || (var.create_mode == "Recovery" && var.recover_point_id != null)
     error_message = "restore_point_id is only applicable if create_mode is Recovery."
   }
 }
@@ -197,8 +183,8 @@ variable "restore_dropped_database_id" {
   type        = string
   default     = null
   validation {
-    condition     = var.create_mode == "Restore"
-    error_message = "restore_dropped_database_id is only applicable if create_mode is Restore."
+    condition     = var.create_mode != "Restore" || (var.create_mode == "Restore" && var.restore_dropped_database_id != null)
+    error_message = "restore_dropped_database_id is only applicable if create_mode is Restore and must not be null when create_mode is Restore."
   }
 }
 
@@ -207,8 +193,8 @@ variable "restore_long_term_retention_backup_id" {
   type        = string
   default     = null
   validation {
-    condition     = var.create_mode == "RestoreLongTermRetentionBackup"
-    error_message = "restore_long_term_retention_backup_id is only applicable if create_mode is RestoreLongTermRetentionBackup."
+    condition     = var.create_mode != "RestoreLongTermRetentionBackup" || (var.create_mode == "RestoreLongTermRetentionBackup" && var.restore_long_term_retention_backup_id != null)
+    error_message = "restore_long_term_retention_backup_id is only applicable if create_mode is RestoreLongTermRetentionBackup and must not be null when create_mode is RestoreLongTermRetentionBackup."
   }
 }
 
@@ -367,12 +353,6 @@ variable "firewall_rules" {
 }
 
 
-variable "service_objective_name" {
-  type        = string
-  default     = "Basic"
-  description = "The performance level for the database. For the list of acceptable values, see https://docs.microsoft.com/en-gb/azure/sql-database/sql-database-service-tiers. Default is Basic."
-}
-
 variable "active_directory_administrators" {
   type = object({
     login                       = string
@@ -391,20 +371,6 @@ variable "active_directory_administrators" {
 EOF
 }
 
-variable "start_ip_address" {
-  type        = string
-  default     = "0.0.0.0"
-  description = "Defines the start IP address used in your database firewall rule."
-}
-
-variable "tags" {
-  type = map(string)
-  default = {
-    tag1 = ""
-    tag2 = ""
-  }
-  description = "The tags to associate with your network and subnets."
-}
 
 #####azurerm_mssql_database_extended_auditing_policy#######
 variable "database_extended_auditing_policies" {
@@ -495,15 +461,15 @@ variable "elasticpool" {
 ####failover_group###
 variable "failover_groups" {
   type = list(object({
-    name                                     = string
-    server_id                                = string
-    databases                                = optional(set(string))
+    name                                      = string
+    server_id                                 = string
+    databases                                 = optional(set(string))
     readonly_endpoint_failover_policy_enabled = optional(bool, false)
     partner_server = object({
       id = string
     })
     read_write_endpoint_failover_policy = object({
-      mode          = string # Possible values: Automatic, Manual
+      mode          = string           # Possible values: Automatic, Manual
       grace_minutes = optional(number) # Required only when mode is Automatic
     })
   }))
@@ -549,12 +515,12 @@ variable "job_credentials" {
 ###mssql_job_schedules###
 variable "job_schedules" {
   type = list(object({
-    job_id     = string  # The ID of the Elastic Job
-    type       = string  # Type of schedule, e.g., "Once" or "Recurring"
-    enabled    = bool    # Whether the schedule is enabled
-    start_time = string  # Start time in RFC3339 format
-    end_time   = string  # End time in RFC3339 format (optional)
-    interval   = string  # Interval in ISO8601 duration format (e.g., "PT5M")
+    job_id     = string # The ID of the Elastic Job
+    type       = string # Type of schedule, e.g., "Once" or "Recurring"
+    enabled    = bool   # Whether the schedule is enabled
+    start_time = string # Start time in RFC3339 format
+    end_time   = string # End time in RFC3339 format (optional)
+    interval   = string # Interval in ISO8601 duration format (e.g., "PT5M")
   }))
   default     = []
   description = "Configuration for MSSQL Elastic Job Schedules"
@@ -563,8 +529,8 @@ variable "job_schedules" {
 ###mssql_outbound_firewall_rules###
 variable "outbound_firewall_rules" {
   type = list(object({
-    name      = string  # Fully Qualified Domain Name (FQDN) for the outbound rule
-    server_id = string  # The resource ID of the MSSQL server
+    name      = string # Fully Qualified Domain Name (FQDN) for the outbound rule
+    server_id = string # The resource ID of the MSSQL server
   }))
   default     = []
   description = "Configuration for MSSQL SQL Outbound Firewall Rules"
@@ -573,8 +539,8 @@ variable "outbound_firewall_rules" {
 ###mssql_server_dns_alias##
 variable "dns_aliases" {
   type = list(object({
-    name            = string  # Name for the MSSQL Server DNS Alias
-    mssql_server_id = string  # The resource ID of the MSSQL server
+    name            = string # Name for the MSSQL Server DNS Alias
+    mssql_server_id = string # The resource ID of the MSSQL server
   }))
   default     = []
   description = "Configuration for MSSQL Server DNS Aliases"
@@ -583,16 +549,16 @@ variable "dns_aliases" {
 ###mssql_server_extended_auditing_policies###
 variable "extended_auditing_policies" {
   type = list(object({
-    server_id                             = string  # The resource ID of the SQL Server
-    enabled                               = bool    # Whether to enable the extended auditing policy (optional, default: true)
-    storage_endpoint                      = string  # The blob storage endpoint
-    retention_in_days                     = number  # The number of days to retain logs (optional, default: 0)
-    storage_account_access_key            = string  # The storage account access key (optional)
-    storage_account_access_key_is_secondary = bool  # Whether to use the secondary key for storage account access (optional)
-    log_monitoring_enabled                = bool    # Enable monitoring in Azure Monitor (optional, default: true)
-    storage_account_subscription_id       = string  # The subscription ID for the storage account (optional)
-    predicate_expression                 = string  # The condition for the audit (optional)
-    audit_actions_and_groups             = list(string)  # The list of actions and action groups to audit (optional)
+    server_id                               = string       # The resource ID of the SQL Server
+    enabled                                 = bool         # Whether to enable the extended auditing policy (optional, default: true)
+    storage_endpoint                        = string       # The blob storage endpoint
+    retention_in_days                       = number       # The number of days to retain logs (optional, default: 0)
+    storage_account_access_key              = string       # The storage account access key (optional)
+    storage_account_access_key_is_secondary = bool         # Whether to use the secondary key for storage account access (optional)
+    log_monitoring_enabled                  = bool         # Enable monitoring in Azure Monitor (optional, default: true)
+    storage_account_subscription_id         = string       # The subscription ID for the storage account (optional)
+    predicate_expression                    = string       # The condition for the audit (optional)
+    audit_actions_and_groups                = list(string) # The list of actions and action groups to audit (optional)
   }))
   default     = []
   description = "Configuration for MSSQL Server Extended Auditing Policies"
@@ -601,11 +567,11 @@ variable "extended_auditing_policies" {
 ###mssql_server_microsoft_support_auditing_policies###
 variable "microsoft_support_auditing_policies" {
   type = list(object({
-    server_id                    = string   # The resource ID of the SQL Server
-    enabled                      = bool     # Whether to enable the auditing policy (optional, default: true)
-    blob_storage_endpoint        = string   # The blob storage endpoint to store auditing logs (optional)
-    storage_account_access_key  = string   # The storage account access key (optional)
-    log_monitoring_enabled       = bool     # Enable logging to Azure Monitor (optional, default: true)
+    server_id                       = string # The resource ID of the SQL Server
+    enabled                         = bool   # Whether to enable the auditing policy (optional, default: true)
+    blob_storage_endpoint           = string # The blob storage endpoint to store auditing logs (optional)
+    storage_account_access_key      = string # The storage account access key (optional)
+    log_monitoring_enabled          = bool   # Enable logging to Azure Monitor (optional, default: true)
     storage_account_subscription_id = string # The subscription ID for the storage account (optional)
   }))
   default     = []
@@ -614,10 +580,10 @@ variable "microsoft_support_auditing_policies" {
 
 variable "transparent_data_encryption" {
   type = list(object({
-    server_id              = string  # The ID of the MSSQL server to apply transparent data encryption
-    key_vault_key_id       = string  # Optional: The Key Vault Key ID for customer-managed keys
-    managed_hsm_key_id     = string  # Optional: The Managed HSM Key ID for customer-managed keys
-    auto_rotation_enabled  = bool    # Optional: Whether to enable automatic key rotation (default: false)
+    server_id             = string # The ID of the MSSQL server to apply transparent data encryption
+    key_vault_key_id      = string # Optional: The Key Vault Key ID for customer-managed keys
+    managed_hsm_key_id    = string # Optional: The Managed HSM Key ID for customer-managed keys
+    auto_rotation_enabled = bool   # Optional: Whether to enable automatic key rotation (default: false)
   }))
   default     = []
   description = "Configuration for MSSQL Server Transparent Data Encryption (TDE)"
