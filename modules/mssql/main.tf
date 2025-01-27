@@ -13,7 +13,7 @@ resource "azurerm_mssql_server" "this" {
   minimum_tls_version                          = var.minimum_tls_version
   public_network_access_enabled                = var.public_network_access_enabled
   outbound_network_restriction_enabled         = var.outbound_network_restriction_enabled
-  primary_user_assigned_identity_id            = var.identity != null && length(var.identity) > 0 ? var.identity[0].principal_id : null
+  primary_user_assigned_identity_id            = try(var.identity.type == "UserAssigned" && length(var.identity.identity_ids) > 0 ? var.identity.identity_ids[0] : null ,null)
   tags                                         = var.tags
 
   dynamic "azuread_administrator" {
@@ -26,13 +26,14 @@ resource "azurerm_mssql_server" "this" {
     }
   }
 
-  dynamic "identity" {
-    for_each = var.identity
-    content {
-      type         = identity.value.type
-      identity_ids = identity.value.principal_id
-    }
+# Dynamic block for identity
+dynamic "identity" {
+  for_each = var.identity != null ? [var.identity] : []
+  content {
+    type         = identity.value.type
+    identity_ids = identity.value.type == "UserAssigned" ? identity.value.identity_ids : []
   }
+}
 }
 
 # Azure MSSQL Database
@@ -65,7 +66,7 @@ resource "azurerm_mssql_database" "this" {
   sample_name                                                = var.sample_name
   storage_account_type                                       = var.storage_account_type
   transparent_data_encryption_enabled                        = var.transparent_data_encryption_enabled
-  transparent_data_encryption_key_automatic_rotation_enabled = var.transparent_data_encryption_key_automatic_rotation_enabled
+  transparent_data_encryption_key_automatic_rotation_enabled = var.transparent_data_encryption_key_vault_key_id != null ? var.transparent_data_encryption_key_automatic_rotation_enabled : null
   transparent_data_encryption_key_vault_key_id               = var.transparent_data_encryption_key_vault_key_id
   secondary_type                                             = var.secondary_type
 
@@ -130,7 +131,7 @@ resource "azurerm_mssql_firewall_rule" "this" {
   count = var.database_type == "mssql" && length(var.firewall_rules) > 0 ? length(var.firewall_rules) : 0
 
   name              = var.firewall_rules[count.index].name
-  server_id         = azurerm_mssql_server.this[0].id
+  server_id         = var.firewall_rules[count.index].server_id != null ? var.firewall_rules[count.index].server_id : azurerm_mssql_server.this[0].id
   start_ip_address  = var.firewall_rules[count.index].start_ip_address
   end_ip_address    = var.firewall_rules[count.index].end_ip_address
 }
@@ -140,7 +141,7 @@ resource "azurerm_mssql_job" "this" {
   count = var.database_type == "mssql" && length(var.jobs) > 0 ? length(var.jobs) : 0
 
   name         = var.jobs[count.index].name
-  job_agent_id = var.jobs[count.index].job_agent_id != "" ? var.jobs[count.index].job_agent_id : azurerm_mssql_job_agent.this[0].id
+  job_agent_id = var.jobs[count.index].job_agent_id != null ? var.jobs[count.index].job_agent_id : azurerm_mssql_job_agent.this[0].id
   description  = var.jobs[count.index].description
 }
 
@@ -149,7 +150,7 @@ resource "azurerm_mssql_job_agent" "this" {
   count = var.database_type == "mssql" && length(var.job_agents) > 0 ? length(var.job_agents) : 0
 
   name        = var.job_agents[count.index].name
-  location = var.job_agents[count.index].location != "" ? var.job_agents[count.index].location : var.location
+  location = var.job_agents[count.index].location != null ? var.job_agents[count.index].location : var.location
   database_id = azurerm_mssql_database.this[0].id
   tags        = var.tags
 }
@@ -159,7 +160,7 @@ resource "azurerm_mssql_job_credential" "this" {
   count = var.database_type == "mssql" && length(var.job_credentials) > 0 ? length(var.job_credentials) : 0
 
   name         = var.job_credentials[count.index].name
-  job_agent_id = var.job_credentials[count.index].job_agent_id != "" ? var.job_credentials[count.index].job_agent_id : azurerm_mssql_job_agent.this[0].id
+  job_agent_id = var.job_credentials[count.index].job_agent_id != null ? var.job_credentials[count.index].job_agent_id : azurerm_mssql_job_agent.this[0].id
   username     = var.job_credentials[count.index].username
   password     = var.job_credentials[count.index].password
 }
@@ -168,7 +169,7 @@ resource "azurerm_mssql_job_credential" "this" {
 resource "azurerm_mssql_job_schedule" "this" {
   count = var.database_type == "mssql" && length(var.job_schedules) > 0 ? length(var.job_schedules) : 0
 
-  job_id     = var.job_schedules[count.index].job_id != "" ? var.job_schedules[count.index].job_id : azurerm_mssql_job.this[0].id
+  job_id     = var.job_schedules[count.index].job_id != null ? var.job_schedules[count.index].job_id : azurerm_mssql_job.this[0].id
   type       = var.job_schedules[count.index].type
   enabled    = var.job_schedules[count.index].enabled
   start_time = var.job_schedules[count.index].start_time
@@ -181,7 +182,7 @@ resource "azurerm_mssql_outbound_firewall_rule" "this" {
   count = var.database_type == "mssql" && length(var.outbound_firewall_rules) > 0 ? length(var.outbound_firewall_rules) : 0
 
   name      = var.outbound_firewall_rules[count.index].name
-  server_id = var.outbound_firewall_rules[count.index].server_id != ""? var.outbound_firewall_rules[count.index].server_id : azurerm_mssql_server.this[0].id
+  server_id = var.outbound_firewall_rules[count.index].server_id != null ? var.outbound_firewall_rules[count.index].server_id : azurerm_mssql_server.this[0].id
 }
 
 ###mssql_server_dns_alias##
@@ -189,7 +190,7 @@ resource "azurerm_mssql_server_dns_alias" "this" {
   count = var.database_type == "mssql" && length(var.dns_aliases) > 0 ? length(var.dns_aliases) : 0
 
   name            = var.dns_aliases[count.index].name
-  mssql_server_id = var.dns_aliases[count.index].mssql_server_id != "" ? var.dns_aliases[count.index].mssql_server_id : azurerm_mssql_server.this[0].id
+  mssql_server_id = var.dns_aliases[count.index].mssql_server_id != null ? var.dns_aliases[count.index].mssql_server_id : azurerm_mssql_server.this[0].id
 }
 
 
@@ -203,7 +204,7 @@ resource "azurerm_mssql_server_dns_alias" "this" {
 #   server_name                 = azurerm_mssql_server.this[0].name
 #   tenant_id                   = var.sql_aad_administrator.tenant_id
 #   azuread_authentication_only = var.sql_aad_administrator.azuread_authentication_only
-# }
+# } 
 
 resource "azurerm_mssql_database_extended_auditing_policy" "this" {
   count = var.database_type == "mssql" && length(var.database_extended_auditing_policies) > 0 ? length(var.database_extended_auditing_policies) : 0

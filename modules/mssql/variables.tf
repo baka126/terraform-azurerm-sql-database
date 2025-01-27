@@ -6,7 +6,7 @@ variable "resource_group_name" {
 
 variable "administrator_login" {
   type        = string
-  description = "The Administrator Login for the PostgreSQL Server. Changing this forces a new resource to be created."
+  description = "The Administrator Login for the mssql Server. Changing this forces a new resource to be created."
   default     = null
 }
 
@@ -66,14 +66,14 @@ variable "transparent_data_encryption_key_vault_key_id" {
 variable "transparent_data_encryption_enabled" {
   type        = bool
   default     = true
-  description = "Whether or not transparent data encryption is enabled. Defaults to false."
+  description = "Whether or not transparent data encryption is enabled. Defaults to true."
 
 }
 
 variable "transparent_data_encryption_key_automatic_rotation_enabled" {
   type        = bool
   default     = false
-  description = "Whether or not automatic key rotation is enabled. Defaults to true."
+  description = "Whether or not automatic key rotation is enabled. Defaults to false."
 
 }
 
@@ -209,7 +209,7 @@ variable "sample_name" {
   type        = string
   default     = null
   validation {
-    condition     = var.sample_name == "AdventureWorksLT"
+    condition     = var.sample_name == null || var.sample_name == "AdventureWorksLT"
     error_message = "sample_name is only applicable if sample_name is AdventureWorksLT."
   }
 }
@@ -234,7 +234,7 @@ variable "sku_name" {
 variable "storage_account_type" {
   description = "Specifies the storage account type used to store backups for this database. Possible values are Geo, GeoZone, Local and Zone. Defaults to Geo  ."
   type        = string
-  default     = "GEO"
+  default     = "Geo"
 }
 
 variable "secondary_type" {
@@ -335,7 +335,7 @@ variable "identity" {
   description = "Identity block for the database."
   type = object({
     type         = string
-    identity_ids = list(string)
+    identity_ids = optional(list(string), [])
   })
   default = null
 }
@@ -344,7 +344,7 @@ variable "identity" {
 variable "firewall_rules" {
   type = list(object({
     name             = string
-    server_id        = string
+    server_id        = optional(string)
     start_ip_address = string
     end_ip_address   = string
   }))
@@ -481,7 +481,7 @@ variable "failover_groups" {
 variable "jobs" {
   type = list(object({
     name         = string
-    job_agent_id = string
+    job_agent_id = optional(string)
     description  = optional(string)
   }))
   default     = []
@@ -492,7 +492,7 @@ variable "jobs" {
 variable "job_agents" {
   type = list(object({
     name        = string
-    location    = string
+    location    = optional(string)
     database_id = string
     tags        = optional(map(string), {})
   }))
@@ -504,7 +504,7 @@ variable "job_agents" {
 variable "job_credentials" {
   type = list(object({
     name         = string
-    job_agent_id = string
+    job_agent_id = optional(string)
     username     = string
     password     = string
   }))
@@ -515,7 +515,7 @@ variable "job_credentials" {
 ###mssql_job_schedules###
 variable "job_schedules" {
   type = list(object({
-    job_id     = string # The ID of the Elastic Job
+    job_id     = optional(string) # The ID of the Elastic Job
     type       = string # Type of schedule, e.g., "Once" or "Recurring"
     enabled    = bool   # Whether the schedule is enabled
     start_time = string # Start time in RFC3339 format
@@ -530,7 +530,7 @@ variable "job_schedules" {
 variable "outbound_firewall_rules" {
   type = list(object({
     name      = string # Fully Qualified Domain Name (FQDN) for the outbound rule
-    server_id = string # The resource ID of the MSSQL server
+    server_id = optional(string) # The resource ID of the MSSQL server
   }))
   default     = []
   description = "Configuration for MSSQL SQL Outbound Firewall Rules"
@@ -540,7 +540,7 @@ variable "outbound_firewall_rules" {
 variable "dns_aliases" {
   type = list(object({
     name            = string # Name for the MSSQL Server DNS Alias
-    mssql_server_id = string # The resource ID of the MSSQL server
+    mssql_server_id = optional(string) # The resource ID of the MSSQL server
   }))
   default     = []
   description = "Configuration for MSSQL Server DNS Aliases"
