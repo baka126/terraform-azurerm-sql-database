@@ -183,6 +183,14 @@ resource "azurerm_mssql_outbound_firewall_rule" "this" {
   server_id = var.outbound_firewall_rules[count.index].server_id != ""? var.outbound_firewall_rules[count.index].server_id : azurerm_mssql_server.this[0].id
 }
 
+###mssql_server_dns_alias##
+resource "azurerm_mssql_server_dns_alias" "this" {
+  count = var.database_type == "mssql" && length(var.dns_aliases) > 0 ? length(var.dns_aliases) : 0
+
+  name            = var.dns_aliases[count.index].name
+  mssql_server_id = var.dns_aliases[count.index].mssql_server_id != "" ? var.dns_aliases[count.index].mssql_server_id : azurerm_mssql_server.this[0].id
+}
+
 
 # Azure MSSQL Active Directory Administrator
 resource "azurerm_sql_active_directory_administrator" "this" {

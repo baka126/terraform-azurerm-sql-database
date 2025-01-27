@@ -570,3 +570,12 @@ variable "outbound_firewall_rules" {
   description = "Configuration for MSSQL SQL Outbound Firewall Rules"
 }
 
+###mssql_server_dns_alias##
+variable "dns_aliases" {
+  type = list(object({
+    name            = string  # Name for the MSSQL Server DNS Alias
+    mssql_server_id = string  # The resource ID of the MSSQL server
+  }))
+  default     = []
+  description = "Configuration for MSSQL Server DNS Aliases"
+}

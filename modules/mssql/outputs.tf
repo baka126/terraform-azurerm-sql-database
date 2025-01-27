@@ -80,3 +80,13 @@ output "mssql_outbound_firewall_rule_ids" {
   description = "The IDs of the created MSSQL Outbound Firewall Rules."
   value       = azurerm_mssql_outbound_firewall_rule.this[*].id
 }
+
+output "mssql_server_dns_alias_ids" {
+  description = "The IDs of the created MSSQL Server DNS Aliases."
+  value       = azurerm_mssql_server_dns_alias.this[*].id
+}
+
+output "mssql_server_dns_alias_dns_records" {
+  description = "The fully qualified DNS records for the created MSSQL Server DNS Aliases."
+  value       = azurerm_mssql_server_dns_alias.this[*].dns_record
+}
