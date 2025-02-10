@@ -352,31 +352,11 @@ variable "firewall_rules" {
   description = "Values for configuring MSSQL Firewall Rules"
 }
 
-
-variable "active_directory_administrators" {
-  type = object({
-    login                       = string
-    object_id                   = string
-    tenant_id                   = string
-    azuread_authentication_only = optional(bool)
-  })
-  default     = null
-  description = <<-EOF
-  object({
-    login = (Required) The login name of the principal to set as the server administrator
-    object_id = (Required) The ID of the principal to set as the server administrator
-    tenant_id = (Required) The Azure Tenant ID
-    azuread_authentication_only = (Optional) Specifies whether only AD Users and administrators can be used to login (`true`) or also local database users (`false`).
-  })
-EOF
-}
-
-
 #####azurerm_mssql_database_extended_auditing_policy#######
 variable "database_extended_auditing_policies" {
   description = "List of extended auditing policies for MSSQL databases."
   type = list(object({
-    database_id                             = string
+    database_id                             = optional(string)
     enabled                                 = optional(bool, true)
     storage_endpoint                        = optional(string)
     retention_in_days                       = optional(number, 0)
@@ -389,8 +369,8 @@ variable "database_extended_auditing_policies" {
 ######vulnerability_assessment_rule_baselines######
 variable "vulnerability_assessment_rule_baselines" {
   type = list(object({
-    server_vulnerability_assessment_id = string
-    database_name                      = string
+    server_vulnerability_assessment_id = optional(string)
+    database_name                      = optional(string)
     rule_id                            = string
     baseline_name                      = optional(string, "default")
     baseline_results                   = list(list(string))
@@ -401,14 +381,14 @@ variable "vulnerability_assessment_rule_baselines" {
 
 variable "vulnerability_assessments" {
   type = list(object({
-    server_security_alert_policy_id = string
+    server_security_alert_policy_id = optional(string)
     storage_container_path          = string
     storage_account_access_key      = optional(string)
     storage_container_sas_key       = optional(string)
     recurring_scans = optional(object({
-      enabled                   = bool
-      email_subscription_admins = bool
-      emails                    = list(string)
+      enabled                   = optional(bool)
+      email_subscription_admins = optional(bool)
+      emails                    = optional(list(string))
     }))
   }))
   default     = []
@@ -435,20 +415,20 @@ variable "security_alert_policies" {
 variable "elasticpool" {
   type = list(object({
     name                           = string
-    resource_group_name            = string
-    location                       = string
-    server_name                    = string
-    license_type                   = string
-    max_size_gb                    = number
-    zone_redundant                 = bool
-    maintenance_configuration_name = string
+    resource_group_name            = optional(string)
+    location                       = optional(string)
+    server_name                    = optional(string)
+    license_type                   = optional(string)
+    max_size_gb                    = optional(number)
+    zone_redundant                 = optional(bool)
+    maintenance_configuration_name = optional(string)
     enclave_type                   = string
-    sku = optional(object({
+    sku = object({
       name     = string
       tier     = string
       capacity = number
-      family   = string
-    }))
+      family   = optional(string)
+    })
     per_database_settings = optional(object({
       min_capacity = number
       max_capacity = number
@@ -493,7 +473,7 @@ variable "job_agents" {
   type = list(object({
     name        = string
     location    = optional(string)
-    database_id = string
+    database_id = optional(string)
     tags        = optional(map(string), {})
   }))
   default     = []
@@ -516,11 +496,11 @@ variable "job_credentials" {
 variable "job_schedules" {
   type = list(object({
     job_id     = optional(string) # The ID of the Elastic Job
-    type       = string # Type of schedule, e.g., "Once" or "Recurring"
-    enabled    = bool   # Whether the schedule is enabled
-    start_time = string # Start time in RFC3339 format
-    end_time   = string # End time in RFC3339 format (optional)
-    interval   = string # Interval in ISO8601 duration format (e.g., "PT5M")
+    type       = string           # Type of schedule, e.g., "Once" or "Recurring"
+    enabled    = bool             # Whether the schedule is enabled
+    start_time = optional(string) # Start time in RFC3339 format
+    end_time   = optional(string) # End time in RFC3339 format (optional)
+    interval   = optional(string) # Interval in ISO8601 duration format (e.g., "PT5M")
   }))
   default     = []
   description = "Configuration for MSSQL Elastic Job Schedules"
@@ -529,7 +509,7 @@ variable "job_schedules" {
 ###mssql_outbound_firewall_rules###
 variable "outbound_firewall_rules" {
   type = list(object({
-    name      = string # Fully Qualified Domain Name (FQDN) for the outbound rule
+    name      = string           # Fully Qualified Domain Name (FQDN) for the outbound rule
     server_id = optional(string) # The resource ID of the MSSQL server
   }))
   default     = []
@@ -539,7 +519,7 @@ variable "outbound_firewall_rules" {
 ###mssql_server_dns_alias##
 variable "dns_aliases" {
   type = list(object({
-    name            = string # Name for the MSSQL Server DNS Alias
+    name            = string           # Name for the MSSQL Server DNS Alias
     mssql_server_id = optional(string) # The resource ID of the MSSQL server
   }))
   default     = []
@@ -549,16 +529,16 @@ variable "dns_aliases" {
 ###mssql_server_extended_auditing_policies###
 variable "extended_auditing_policies" {
   type = list(object({
-    server_id                               = string       # The resource ID of the SQL Server
-    enabled                                 = bool         # Whether to enable the extended auditing policy (optional, default: true)
-    storage_endpoint                        = string       # The blob storage endpoint
-    retention_in_days                       = number       # The number of days to retain logs (optional, default: 0)
-    storage_account_access_key              = string       # The storage account access key (optional)
-    storage_account_access_key_is_secondary = bool         # Whether to use the secondary key for storage account access (optional)
-    log_monitoring_enabled                  = bool         # Enable monitoring in Azure Monitor (optional, default: true)
-    storage_account_subscription_id         = string       # The subscription ID for the storage account (optional)
-    predicate_expression                    = string       # The condition for the audit (optional)
-    audit_actions_and_groups                = list(string) # The list of actions and action groups to audit (optional)
+    server_id                               = optional(string)       # The resource ID of the SQL Server
+    enabled                                 = optional(bool)         # Whether to enable the extended auditing policy (optional, default: true)
+    storage_endpoint                        = optional(string)       # The blob storage endpoint
+    retention_in_days                       = optional(number)       # The number of days to retain logs (optional, default: 0)
+    storage_account_access_key              = optional(string)       # The storage account access key (optional)
+    storage_account_access_key_is_secondary = optional(bool)         # Whether to use the secondary key for storage account access (optional)
+    log_monitoring_enabled                  = optional(bool)         # Enable monitoring in Azure Monitor (optional, default: true)
+    storage_account_subscription_id         = optional(string)       # The subscription ID for the storage account (optional)
+    predicate_expression                    = optional(string)       # The condition for the audit (optional)
+    audit_actions_and_groups                = optional(list(string)) # The list of actions and action groups to audit (optional)
   }))
   default     = []
   description = "Configuration for MSSQL Server Extended Auditing Policies"
@@ -567,12 +547,12 @@ variable "extended_auditing_policies" {
 ###mssql_server_microsoft_support_auditing_policies###
 variable "microsoft_support_auditing_policies" {
   type = list(object({
-    server_id                       = string # The resource ID of the SQL Server
-    enabled                         = bool   # Whether to enable the auditing policy (optional, default: true)
-    blob_storage_endpoint           = string # The blob storage endpoint to store auditing logs (optional)
-    storage_account_access_key      = string # The storage account access key (optional)
-    log_monitoring_enabled          = bool   # Enable logging to Azure Monitor (optional, default: true)
-    storage_account_subscription_id = string # The subscription ID for the storage account (optional)
+    server_id                       = optional(string) # The resource ID of the SQL Server
+    enabled                         = optional(bool)   # Whether to enable the auditing policy (optional, default: true)
+    blob_storage_endpoint           = optional(string) # The blob storage endpoint to store auditing logs (optional)
+    storage_account_access_key      = optional(string) # The storage account access key (optional)
+    log_monitoring_enabled          = optional(bool)   # Enable logging to Azure Monitor (optional, default: true)
+    storage_account_subscription_id = optional(string) # The subscription ID for the storage account (optional)
   }))
   default     = []
   description = "Configuration for MSSQL Server Microsoft Support Auditing Policies"
@@ -580,10 +560,10 @@ variable "microsoft_support_auditing_policies" {
 
 variable "transparent_data_encryption" {
   type = list(object({
-    server_id             = string # The ID of the MSSQL server to apply transparent data encryption
-    key_vault_key_id      = string # Optional: The Key Vault Key ID for customer-managed keys
-    managed_hsm_key_id    = string # Optional: The Managed HSM Key ID for customer-managed keys
-    auto_rotation_enabled = bool   # Optional: Whether to enable automatic key rotation (default: false)
+    server_id             = optional(string) # The ID of the MSSQL server to apply transparent data encryption
+    key_vault_key_id      = string           # Optional: The Key Vault Key ID for customer-managed keys
+    managed_hsm_key_id    = string           # Optional: The Managed HSM Key ID for customer-managed keys
+    auto_rotation_enabled = bool             # Optional: Whether to enable automatic key rotation (default: false)
   }))
   default     = []
   description = "Configuration for MSSQL Server Transparent Data Encryption (TDE)"

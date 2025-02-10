@@ -13,7 +13,7 @@ resource "azurerm_mssql_server" "this" {
   minimum_tls_version                          = var.minimum_tls_version
   public_network_access_enabled                = var.public_network_access_enabled
   outbound_network_restriction_enabled         = var.outbound_network_restriction_enabled
-  primary_user_assigned_identity_id            = try(var.identity.type == "UserAssigned" && length(var.identity.identity_ids) > 0 ? var.identity.identity_ids[0] : null ,null)
+  primary_user_assigned_identity_id            = try(var.identity.type == "UserAssigned" && length(var.identity.identity_ids) > 0 ? var.identity.identity_ids[0] : null, null)
   tags                                         = var.tags
 
   dynamic "azuread_administrator" {
@@ -26,14 +26,14 @@ resource "azurerm_mssql_server" "this" {
     }
   }
 
-# Dynamic block for identity
-dynamic "identity" {
-  for_each = var.identity != null ? [var.identity] : []
-  content {
-    type         = identity.value.type
-    identity_ids = identity.value.type == "UserAssigned" ? identity.value.identity_ids : []
+  # Dynamic block for identity
+  dynamic "identity" {
+    for_each = var.identity != null ? [var.identity] : []
+    content {
+      type         = identity.value.type
+      identity_ids = identity.value.type == "UserAssigned" ? identity.value.identity_ids : []
+    }
   }
-}
 }
 
 # Azure MSSQL Database
@@ -130,10 +130,10 @@ resource "azurerm_mssql_database" "this" {
 resource "azurerm_mssql_firewall_rule" "this" {
   count = var.database_type == "mssql" && length(var.firewall_rules) > 0 ? length(var.firewall_rules) : 0
 
-  name              = var.firewall_rules[count.index].name
-  server_id         = var.firewall_rules[count.index].server_id != null ? var.firewall_rules[count.index].server_id : azurerm_mssql_server.this[0].id
-  start_ip_address  = var.firewall_rules[count.index].start_ip_address
-  end_ip_address    = var.firewall_rules[count.index].end_ip_address
+  name             = var.firewall_rules[count.index].name
+  server_id        = var.firewall_rules[count.index].server_id != null ? var.firewall_rules[count.index].server_id : azurerm_mssql_server.this[0].id
+  start_ip_address = var.firewall_rules[count.index].start_ip_address
+  end_ip_address   = var.firewall_rules[count.index].end_ip_address
 }
 
 ###mssql_job##
@@ -150,8 +150,8 @@ resource "azurerm_mssql_job_agent" "this" {
   count = var.database_type == "mssql" && length(var.job_agents) > 0 ? length(var.job_agents) : 0
 
   name        = var.job_agents[count.index].name
-  location = var.job_agents[count.index].location != null ? var.job_agents[count.index].location : var.location
-  database_id = azurerm_mssql_database.this[0].id
+  location    = var.job_agents[count.index].location != null ? var.job_agents[count.index].location : var.location
+  database_id = var.job_agents[count.index].database_id != null ? var.job_agents[count.index].database_id : azurerm_mssql_database.this[0].id
   tags        = var.tags
 }
 
@@ -193,23 +193,11 @@ resource "azurerm_mssql_server_dns_alias" "this" {
   mssql_server_id = var.dns_aliases[count.index].mssql_server_id != null ? var.dns_aliases[count.index].mssql_server_id : azurerm_mssql_server.this[0].id
 }
 
-
-# # Azure MSSQL Active Directory Administrator
-# resource "azurerm_sql_active_directory_administrator" "this" {
-#   count = var.database_type == "mssql" && length(var.active_directory_administrators) > 0 ? length(var.active_directory_administrators) : 0
-
-#   login                       = var.sql_aad_administrator.login
-#   object_id                   = var.sql_aad_administrator.object_id
-#   resource_group_name         = var.resource_group_name
-#   server_name                 = azurerm_mssql_server.this[0].name
-#   tenant_id                   = var.sql_aad_administrator.tenant_id
-#   azuread_authentication_only = var.sql_aad_administrator.azuread_authentication_only
-# } 
-
+###mssql_database_extended_auditing_policies###
 resource "azurerm_mssql_database_extended_auditing_policy" "this" {
   count = var.database_type == "mssql" && length(var.database_extended_auditing_policies) > 0 ? length(var.database_extended_auditing_policies) : 0
 
-  database_id                             = azurerm_mssql_database.this[0].id
+  database_id                             = var.database_extended_auditing_policies[count.index].database_id != null ? var.database_extended_auditing_policies[count.index].database_id : azurerm_mssql_database.this[0].id
   enabled                                 = var.database_extended_auditing_policies[count.index].enabled
   storage_endpoint                        = var.database_extended_auditing_policies[count.index].storage_endpoint
   retention_in_days                       = var.database_extended_auditing_policies[count.index].retention_in_days
@@ -221,8 +209,8 @@ resource "azurerm_mssql_database_extended_auditing_policy" "this" {
 resource "azurerm_mssql_database_vulnerability_assessment_rule_baseline" "this" {
   count = var.database_type == "mssql" && length(var.vulnerability_assessment_rule_baselines) > 0 ? length(var.vulnerability_assessment_rule_baselines) : 0
 
-  server_vulnerability_assessment_id = azurerm_mssql_server_vulnerability_assessment.this[count.index].id
-  database_name                      = azurerm_mssql_database.this[0].name
+  server_vulnerability_assessment_id = var.vulnerability_assessment_rule_baselines[count.index].server_vulnerability_assessment_id != null ? var.vulnerability_assessment_rule_baselines[count.index].server_vulnerability_assessment_id : azurerm_mssql_server_vulnerability_assessment.this[count.index].id
+  database_name                      = var.vulnerability_assessment_rule_baselines[count.index].database_name != null ? var.vulnerability_assessment_rule_baselines[count.index].database_name : azurerm_mssql_database.this[0].name
   rule_id                            = var.vulnerability_assessment_rule_baselines[count.index].rule_id
   baseline_name                      = coalesce(var.vulnerability_assessment_rule_baselines[count.index].baseline_name, "default")
 
@@ -240,9 +228,9 @@ resource "azurerm_mssql_elasticpool" "this" {
   count = var.database_type == "mssql" && length(var.elasticpool) > 0 ? length(var.elasticpool) : 0
 
   name                           = var.elasticpool[count.index].name
-  resource_group_name            = var.resource_group_name
-  location                       = var.location
-  server_name                    = azurerm_mssql_server.this[0].name
+  resource_group_name            = var.elasticpool[count.index].resource_group_name != null ? var.elasticpool[count.index].resource_group_name : var.resource_group_name
+  location                       = var.elasticpool[count.index].location != null ? var.elasticpool[count.index].location : var.location
+  server_name                    = var.elasticpool[count.index].server_name != null ? var.elasticpool[count.index].server_name : azurerm_mssql_server.this[0].name
   license_type                   = var.elasticpool[count.index].license_type
   zone_redundant                 = var.elasticpool[count.index].zone_redundant
   max_size_gb                    = var.max_size_gb
@@ -272,11 +260,11 @@ resource "azurerm_mssql_elasticpool" "this" {
 resource "azurerm_mssql_failover_group" "this" {
   count = var.database_type == "mssql" && length(var.failover_groups) > 0 ? length(var.failover_groups) : 0
 
-  name                                     = var.failover_groups[count.index].name
-  server_id                                = var.failover_groups[count.index].server_id
-  databases                                = var.failover_groups[count.index].databases
+  name                                      = var.failover_groups[count.index].name
+  server_id                                 = var.failover_groups[count.index].server_id
+  databases                                 = var.failover_groups[count.index].databases
   readonly_endpoint_failover_policy_enabled = var.failover_groups[count.index].readonly_endpoint_failover_policy_enabled
-  tags                                     = var.tags
+  tags                                      = var.tags
 
   dynamic "partner_server" {
     for_each = [var.failover_groups[count.index].partner_server]
@@ -298,7 +286,7 @@ resource "azurerm_mssql_failover_group" "this" {
 resource "azurerm_mssql_server_vulnerability_assessment" "this" {
   count = var.database_type == "mssql" && length(var.vulnerability_assessments) > 0 ? length(var.vulnerability_assessments) : 0
 
-  server_security_alert_policy_id = azurerm_mssql_server_security_alert_policy.this[count.index].id
+  server_security_alert_policy_id = var.vulnerability_assessments[count.index].server_security_alert_policy_id != null ? var.vulnerability_assessments[count.index].server_security_alert_policy_id : azurerm_mssql_server_security_alert_policy.this[count.index].id
   storage_container_path          = var.vulnerability_assessments[count.index].storage_container_path
   storage_account_access_key      = var.vulnerability_assessments[count.index].storage_account_access_key
   storage_container_sas_key       = var.vulnerability_assessments[count.index].storage_container_sas_key
@@ -317,8 +305,8 @@ resource "azurerm_mssql_server_vulnerability_assessment" "this" {
 resource "azurerm_mssql_server_security_alert_policy" "this" {
   count = var.database_type == "mssql" && length(var.security_alert_policies) > 0 ? length(var.security_alert_policies) : 0
 
-  resource_group_name        = var.resource_group_name
-  server_name                = azurerm_mssql_server.this[0].name
+  resource_group_name        = var.security_alert_policies[count.index].resource_group_name != null ? var.security_alert_policies[count.index].resource_group_name : var.resource_group_name
+  server_name                = var.security_alert_policies[count.index].server_name != null ? var.security_alert_policies[count.index].server_name : azurerm_mssql_server.this[0].name
   state                      = var.security_alert_policies[count.index].state
   storage_endpoint           = var.security_alert_policies[count.index].storage_endpoint
   storage_account_access_key = var.security_alert_policies[count.index].storage_account_access_key
@@ -332,7 +320,7 @@ resource "azurerm_mssql_server_security_alert_policy" "this" {
 resource "azurerm_mssql_server_extended_auditing_policy" "this" {
   count = var.database_type == "mssql" && length(var.extended_auditing_policies) > 0 ? length(var.extended_auditing_policies) : 0
 
-  server_id                               = var.extended_auditing_policies[count.index].server_id != "" ? var.extended_auditing_policies[count.index].server_id : azurerm_mssql_server.this[0].id
+  server_id                               = var.extended_auditing_policies[count.index].server_id != null ? var.extended_auditing_policies[count.index].server_id : azurerm_mssql_server.this[0].id
   enabled                                 = var.extended_auditing_policies[count.index].enabled != null ? var.extended_auditing_policies[count.index].enabled : true
   storage_endpoint                        = var.extended_auditing_policies[count.index].storage_endpoint
   retention_in_days                       = var.extended_auditing_policies[count.index].retention_in_days != null ? var.extended_auditing_policies[count.index].retention_in_days : 0
@@ -340,27 +328,27 @@ resource "azurerm_mssql_server_extended_auditing_policy" "this" {
   storage_account_access_key_is_secondary = var.extended_auditing_policies[count.index].storage_account_access_key_is_secondary
   log_monitoring_enabled                  = var.extended_auditing_policies[count.index].log_monitoring_enabled != null ? var.extended_auditing_policies[count.index].log_monitoring_enabled : true
   storage_account_subscription_id         = var.extended_auditing_policies[count.index].storage_account_subscription_id
-  predicate_expression                   = var.extended_auditing_policies[count.index].predicate_expression
-  audit_actions_and_groups               = var.extended_auditing_policies[count.index].audit_actions_and_groups
+  predicate_expression                    = var.extended_auditing_policies[count.index].predicate_expression
+  audit_actions_and_groups                = var.extended_auditing_policies[count.index].audit_actions_and_groups
 }
 
 ####mssql_microsoft_support_auditing_policy###
 resource "azurerm_mssql_server_microsoft_support_auditing_policy" "this" {
   count = var.database_type == "mssql" && length(var.microsoft_support_auditing_policies) > 0 ? length(var.microsoft_support_auditing_policies) : 0
 
-  server_id                           = var.microsoft_support_auditing_policies[count.index].server_id != "" ? var.microsoft_support_auditing_policies[count.index].server_id : azurerm_mssql_server.this[0].id
-  enabled                              = var.microsoft_support_auditing_policies[count.index].enabled != null ? var.microsoft_support_auditing_policies[count.index].enabled : true
-  blob_storage_endpoint                = var.microsoft_support_auditing_policies[count.index].blob_storage_endpoint
-  storage_account_access_key          = var.microsoft_support_auditing_policies[count.index].storage_account_access_key
-  log_monitoring_enabled               = var.microsoft_support_auditing_policies[count.index].log_monitoring_enabled != null ? var.microsoft_support_auditing_policies[count.index].log_monitoring_enabled : true
-  storage_account_subscription_id     = var.microsoft_support_auditing_policies[count.index].storage_account_subscription_id
+  server_id                       = var.microsoft_support_auditing_policies[count.index].server_id != null ? var.microsoft_support_auditing_policies[count.index].server_id : azurerm_mssql_server.this[0].id
+  enabled                         = var.microsoft_support_auditing_policies[count.index].enabled != null ? var.microsoft_support_auditing_policies[count.index].enabled : true
+  blob_storage_endpoint           = var.microsoft_support_auditing_policies[count.index].blob_storage_endpoint
+  storage_account_access_key      = var.microsoft_support_auditing_policies[count.index].storage_account_access_key
+  log_monitoring_enabled          = var.microsoft_support_auditing_policies[count.index].log_monitoring_enabled != null ? var.microsoft_support_auditing_policies[count.index].log_monitoring_enabled : true
+  storage_account_subscription_id = var.microsoft_support_auditing_policies[count.index].storage_account_subscription_id
 }
 
 resource "azurerm_mssql_server_transparent_data_encryption" "this" {
   count = var.database_type == "mssql" && length(var.transparent_data_encryption) > 0 ? length(var.transparent_data_encryption) : 0
 
-  server_id               = var.transparent_data_encryption[count.index].server_id != "" ? var.transparent_data_encryption[count.index].server_id : azurerm_mssql_server.this[0].id
-  key_vault_key_id        = var.transparent_data_encryption[count.index].key_vault_key_id
-  managed_hsm_key_id      = var.transparent_data_encryption[count.index].managed_hsm_key_id
-  auto_rotation_enabled   = var.transparent_data_encryption[count.index].auto_rotation_enabled != null ? var.transparent_data_encryption[count.index].auto_rotation_enabled : false
+  server_id             = var.transparent_data_encryption[count.index].server_id != null ? var.transparent_data_encryption[count.index].server_id : azurerm_mssql_server.this[0].id
+  key_vault_key_id      = var.transparent_data_encryption[count.index].key_vault_key_id
+  managed_hsm_key_id    = var.transparent_data_encryption[count.index].managed_hsm_key_id
+  auto_rotation_enabled = var.transparent_data_encryption[count.index].auto_rotation_enabled != null ? var.transparent_data_encryption[count.index].auto_rotation_enabled : false
 }

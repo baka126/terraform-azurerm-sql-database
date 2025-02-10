@@ -1,16 +1,16 @@
-## MAJOR.MINOR.PATCH (Unreleased)
+## 4.0.0 (Unreleased)
 
 BREAKING CHANGES:
-* no changes
+* n/a
 
 NOTES:
-* no changes
+* First release version for Azurerm provider ~> 4.0
 
 FEATURES:
-* no changes
+* n/a
 
 ENHANCEMENTS:
-* no changes
+* n/a
 
 BUG FIXES:
-* no changes
+* n/a

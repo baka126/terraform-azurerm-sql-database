@@ -1,14 +1,26 @@
+
+################################################################################
+# Defines and manage Terraform provider version
+################################################################################
+
 terraform {
-  required_version = ">= 1.3.0" # Update based on your Terraform version
+  required_version = ">=1.0.0"
   required_providers {
     azurerm = {
       source  = "hashicorp/azurerm"
-      version = "4.14.0" #
+      version = "~> 4.0"
     }
-
+    random = {
+      source  = "hashicorp/random"
+      version = "~> 3.5"
+    }
+    null = {
+      source  = "hashicorp/null"
+      version = "~> 3.0"
+    }
     azuread = {
       source  = "hashicorp/azuread"
-      version = "3.0.2"
+      version = "~>3.0"
     }
   }
 }
