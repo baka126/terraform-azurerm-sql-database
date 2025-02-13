@@ -387,7 +387,7 @@ variable "restore_point_in_time" {
   type        = string
   default     = null
   validation {
-    condition     = var.create_mode != "PointInTimeRestore" || (var.create_mode == "PointInTimeRestore" && var.restore_point_in_time != null)
+    condition     = var.mssql_create_mode != "PointInTimeRestore" || (var.mssql_create_mode == "PointInTimeRestore" && var.restore_point_in_time != null)
     error_message = "restore_point_in_time is only applicable if create_mode is PointInTimeRestore and must not be null when create_mode is PointInTimeRestore."
   }
 }
@@ -397,7 +397,7 @@ variable "recover_database_id" {
   type        = string
   default     = null
   validation {
-    condition     = var.create_mode != "Recovery" || (var.create_mode == "Recovery" && var.recover_database_id != null)
+    condition     = var.mssql_create_mode != "Recovery" || (var.mssql_create_mode == "Recovery" && var.recover_database_id != null)
     error_message = "recover_database_id is only applicable if create_mode is Recovery and must not be null when create_mode is Recovery."
   }
 }
@@ -407,7 +407,7 @@ variable "recover_point_id" {
   type        = string
   default     = null
   validation {
-    condition     = var.create_mode != "Recovery" || (var.create_mode == "Recovery" && var.recover_point_id != null)
+    condition     = var.mssql_create_mode != "Recovery" || (var.mssql_create_mode == "Recovery" && var.recover_point_id != null)
     error_message = "restore_point_id is only applicable if create_mode is Recovery."
   }
 }
@@ -417,7 +417,7 @@ variable "restore_dropped_database_id" {
   type        = string
   default     = null
   validation {
-    condition     = var.create_mode != "Restore" || (var.create_mode == "Restore" && var.restore_dropped_database_id != null)
+    condition     = var.mssql_create_mode != "Restore" || (var.mssql_create_mode == "Restore" && var.restore_dropped_database_id != null)
     error_message = "restore_dropped_database_id is only applicable if create_mode is Restore and must not be null when create_mode is Restore."
   }
 }
@@ -427,7 +427,7 @@ variable "restore_long_term_retention_backup_id" {
   type        = string
   default     = null
   validation {
-    condition     = var.create_mode != "RestoreLongTermRetentionBackup" || (var.create_mode == "RestoreLongTermRetentionBackup" && var.restore_long_term_retention_backup_id != null)
+    condition     = var.mssql_create_mode != "RestoreLongTermRetentionBackup" || (var.mssql_create_mode == "RestoreLongTermRetentionBackup" && var.restore_long_term_retention_backup_id != null)
     error_message = "restore_long_term_retention_backup_id is only applicable if create_mode is RestoreLongTermRetentionBackup and must not be null when create_mode is RestoreLongTermRetentionBackup."
   }
 }
