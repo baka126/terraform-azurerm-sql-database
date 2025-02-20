@@ -5,46 +5,42 @@ import (
 	"testing"
 
 	"github.com/gruntwork-io/terratest/modules/terraform"
-	testStructure "github.com/gruntwork-io/terratest/modules/test-structure"
 	"github.com/stretchr/testify/assert"
 )
 
-func cleanup(t *testing.T, terraformOptions *terraform.Options, tempTestFolder string) {
-	terraform.Destroy(t, terraformOptions)
-	os.RemoveAll(tempTestFolder)
-}
+func TestTerraformAzureExample(t *testing.T) {
+	t.Parallel()
 
-func TestTerraformExample(t *testing.T) {
-	// t.Parallel()
-	// Construct the terraform options with default retryable errors to handle the most common
-	// retryable errors in terraform testing.
-	terraformStateKey := os.Getenv("terraformS3Key")
+	requiredEnvVars := []string{
+        "ARM_SUBSCRIPTION_ID",
+        "ARM_TENANT_ID",
+		"ARM_CLIENT_ID",
+    }
 
-	rootFolder := "../"
-	terraformFolderRelativeToRoot := "./examples/complete"
+    for _, envVar := range requiredEnvVars {
+        if os.Getenv(envVar) == "" {
+            t.Fatalf("Required environment variable %s is not set", envVar)
+        }
+    }
 
-	tempTestFolder := testStructure.CopyTerraformFolderToTemp(t, rootFolder, terraformFolderRelativeToRoot)
-
-	terraformOptions := terraform.WithDefaultRetryableErrors(t, &terraform.Options{
-		// Set the path to the Terraform code that will be tested.
-		TerraformDir: tempTestFolder,
-		Upgrade:      true,
-		// Variables to pass to our Terraform code using -var-file options
-		Lock:     true,
+	// website::tag::1:: Configure Terraform setting up a path to Terraform code.
+	terraformOptions := &terraform.Options{
+		// The path to where our Terraform code is located
+		TerraformDir: "../examples/complete",
+		Reconfigure: true,
 		BackendConfig: map[string]interface{}{
-			"bucket":         "adex-terraform-state",
-			"key":            terraformStateKey,
-			"region":         "us-east-1",
-			"dynamodb_table": "adex-terraform-state",
-			"acl":            "bucket-owner-full-control",
-			"encrypt":        true,
+			"resource_group_name": "tfstate",
+			"storage_account_name": "tfstatea2x4g",
+			"container_name":"tfstate",
+			"key":"module-template/template.tfstate",
 		},
-	})
+	}
 
-	// At the end of the test, run `terraform destroy` to clean up any resources that were created
-	defer cleanup(t, terraformOptions, tempTestFolder)
 
-	// This will run `terraform init` and `terraform apply` and fail the test if there are any errors
+	// website::tag::4:: At the end of the test, run `terraform destroy` to clean up any resources that were created
+	defer terraform.Destroy(t, terraformOptions)
+
+	// website::tag::2:: Run `terraform init` and `terraform apply`. Fail the test if there are any errors.
 	terraform.InitAndApply(t, terraformOptions)
 
 	// Run `terraform output` to get the values of output variables and check they have the expected values.
