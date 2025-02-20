@@ -249,7 +249,7 @@
             ARM_TENANT_ID: ${{ secrets.ADEX_AZURE_TENANT_ID }}
           run: |
             cd ${{ env.terraformWorkDir }}
-            terraform plan -var-file=dev.tfvars -no-color -out tf.plan
+            terraform plan -no-color -out tf.plan
 
         - name: Upload Terraform Plan File
           if: steps.plan.outcome == 'success' && github.event_name == 'pull_request'
