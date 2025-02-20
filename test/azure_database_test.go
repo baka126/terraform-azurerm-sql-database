@@ -51,7 +51,7 @@ func TestTerraformExample(t *testing.T) {
 	database_name := terraform.Output(t, terraformOptions, "database_name")
 	mssql_server_name := terraform.Output(t, terraformOptions, "mssql_server_name")
 	mssql_server_fqdn := terraform.Output(t, terraformOptions, "mssql_server_fqdn")
-	assert.NotNil(t, database_name, "database_name should not be nil")
-	assert.NotNil(t, mssql_server_name, "mssql_server_name should not be nil")
-	assert.Contains(t, mssql_server_fqdn, "*.database.windows.net")
+	assert.Contains(t, database_name, "test-sqldb-module")
+	assert.Contains(t, mssql_server_name, "test-sql-module")
+	assert.Contains(t, mssql_server_fqdn, "test-sql-module.database.windows.net")
 }
