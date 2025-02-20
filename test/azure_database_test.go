@@ -32,7 +32,7 @@ func TestTerraformAzureExample(t *testing.T) {
 			"resource_group_name": "tfstate",
 			"storage_account_name": "tfstatea2x4g",
 			"container_name":"tfstate",
-			"key":"module-template/template.tfstate",
+			"key":"azure-terraform-database-modeule/terratest.tfstate",
 		},
 	}
 
@@ -44,10 +44,10 @@ func TestTerraformAzureExample(t *testing.T) {
 	terraform.InitAndApply(t, terraformOptions)
 
 	// Run `terraform output` to get the values of output variables and check they have the expected values.
-	database_name := terraform.Output(t, terraformOptions, "database_name")
-	mssql_server_name := terraform.Output(t, terraformOptions, "mssql_server_name")
-	mssql_server_fqdn := terraform.Output(t, terraformOptions, "mssql_server_fqdn")
-	assert.Contains(t, database_name, "test-sqldb-module")
-	assert.Contains(t, mssql_server_name, "test-sql-module")
-	assert.Contains(t, mssql_server_fqdn, "test-sql-module.database.windows.net")
+	databaseName := terraform.Output(t, terraformOptions, "database_name")
+	mssqlServerName := terraform.Output(t, terraformOptions, "mssql_server_name")
+	mssqlServerFqdn := terraform.Output(t, terraformOptions, "mssql_server_fqdn")
+	assert.Contains(t, databaseName, "test-sqldb-module")
+	assert.Contains(t, mssqlServerName, "test-sql-module")
+	assert.Contains(t, mssqlServerFqdn, "test-sql-module.database.windows.net")
 }
