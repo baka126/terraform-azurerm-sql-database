@@ -1,6 +1,7 @@
 # Azure MSSQL Server
 resource "azurerm_mssql_server" "this" {
   # checkov:skip=CKV2_AZURE_45: "Ensure Microsoft SQL server is configured with private endpoint"
+  # checkov:skip=CKV2_AZURE_2: "Ensure that Vulnerability Assessment (VA) is enabled on a SQL server by setting a Storage Account"
   count = var.database_type == "mssql" ? 1 : 0
 
   name                                         = var.server_name
