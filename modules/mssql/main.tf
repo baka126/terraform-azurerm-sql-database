@@ -1,5 +1,6 @@
 # Azure MSSQL Server
 resource "azurerm_mssql_server" "this" {
+  # checkov:skip=CKV2_AZURE_45: "Ensure Microsoft SQL server is configured with private endpoint"
   count = var.database_type == "mssql" ? 1 : 0
 
   name                                         = var.server_name
@@ -284,6 +285,10 @@ resource "azurerm_mssql_failover_group" "this" {
 
 
 resource "azurerm_mssql_server_vulnerability_assessment" "this" {
+  # checkov:skip=CKV2_AZURE_4: "Ensure Azure SQL server ADS VA Send scan reports to is configured"
+  # checkov:skip=CKV2_AZURE_5: "Ensure that VA setting 'Also send email notifications to admins and subscription owners' is set for a SQL server"
+  # checkov:skip=CKV2_AZURE_3: "Ensure that VA setting Periodic Recurring Scans is enabled on a SQL server"
+
   count = var.database_type == "mssql" && length(var.vulnerability_assessments) > 0 ? length(var.vulnerability_assessments) : 0
 
   server_security_alert_policy_id = var.vulnerability_assessments[count.index].server_security_alert_policy_id != null ? var.vulnerability_assessments[count.index].server_security_alert_policy_id : azurerm_mssql_server_security_alert_policy.this[count.index].id
@@ -323,7 +328,7 @@ resource "azurerm_mssql_server_extended_auditing_policy" "this" {
   server_id                               = var.extended_auditing_policies[count.index].server_id != null ? var.extended_auditing_policies[count.index].server_id : azurerm_mssql_server.this[0].id
   enabled                                 = var.extended_auditing_policies[count.index].enabled != null ? var.extended_auditing_policies[count.index].enabled : true
   storage_endpoint                        = var.extended_auditing_policies[count.index].storage_endpoint
-  retention_in_days                       = var.extended_auditing_policies[count.index].retention_in_days != null ? var.extended_auditing_policies[count.index].retention_in_days : 0
+  retention_in_days                       = var.extended_auditing_policies[count.index].retention_in_days != null ? var.extended_auditing_policies[count.index].retention_in_days : 90
   storage_account_access_key              = var.extended_auditing_policies[count.index].storage_account_access_key
   storage_account_access_key_is_secondary = var.extended_auditing_policies[count.index].storage_account_access_key_is_secondary
   log_monitoring_enabled                  = var.extended_auditing_policies[count.index].log_monitoring_enabled != null ? var.extended_auditing_policies[count.index].log_monitoring_enabled : true

@@ -397,8 +397,8 @@ variable "vulnerability_assessments" {
 
 variable "security_alert_policies" {
   type = list(object({
-    resource_group_name        = string
-    server_name                = string
+    resource_group_name        = optional(string)
+    server_name                = optional(string)
     state                      = string //Possible values are Disabled, Enabled and New.
     storage_endpoint           = optional(string)
     storage_account_access_key = optional(string)
@@ -532,7 +532,7 @@ variable "extended_auditing_policies" {
     server_id                               = optional(string)       # The resource ID of the SQL Server
     enabled                                 = optional(bool)         # Whether to enable the extended auditing policy (optional, default: true)
     storage_endpoint                        = optional(string)       # The blob storage endpoint
-    retention_in_days                       = optional(number)       # The number of days to retain logs (optional, default: 0)
+    retention_in_days                       = optional(number)       # The number of days to retain logs (optional, default: 90)
     storage_account_access_key              = optional(string)       # The storage account access key (optional)
     storage_account_access_key_is_secondary = optional(bool)         # Whether to use the secondary key for storage account access (optional)
     log_monitoring_enabled                  = optional(bool)         # Enable monitoring in Azure Monitor (optional, default: true)

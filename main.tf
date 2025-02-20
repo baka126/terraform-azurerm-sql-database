@@ -36,6 +36,10 @@ module "postgresql" {
   postgresql_configurations         = var.postgresql_configurations
   postgresql_virtual_endpoints      = var.postgresql_virtual_endpoints
   firewall_rules                    = var.postgres_firewall_rules
+  db_names                          = var.db_names
+  db_charset                        = var.db_charset
+  db_collation                      = var.db_collation
+  firewall_rule_prefix              = var.firewall_rule_prefix
 
 }
 
@@ -103,5 +107,6 @@ module "mssql" {
   extended_auditing_policies                                 = var.extended_auditing_policies
   microsoft_support_auditing_policies                        = var.microsoft_support_auditing_policies
   transparent_data_encryption                                = var.transparent_data_encryption
+  dns_aliases                                                = var.dns_aliases
 
 }

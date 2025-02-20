@@ -22,7 +22,6 @@ func TestTerraformExample(t *testing.T) {
 
 	rootFolder := "../"
 	terraformFolderRelativeToRoot := "./examples/complete"
-	varFiles := []string{"dev.tfvars"}
 
 	tempTestFolder := testStructure.CopyTerraformFolderToTemp(t, rootFolder, terraformFolderRelativeToRoot)
 
@@ -31,7 +30,6 @@ func TestTerraformExample(t *testing.T) {
 		TerraformDir: tempTestFolder,
 		Upgrade:      true,
 		// Variables to pass to our Terraform code using -var-file options
-		VarFiles: varFiles,
 		Lock:     true,
 		BackendConfig: map[string]interface{}{
 			"bucket":         "adex-terraform-state",
@@ -50,6 +48,10 @@ func TestTerraformExample(t *testing.T) {
 	terraform.InitAndApply(t, terraformOptions)
 
 	// Run `terraform output` to get the values of output variables and check they have the expected values.
-	output := terraform.Output(t, terraformOptions, "id")
-	assert.NotNil(t, output)
+	database_name := terraform.Output(t, terraformOptions, "database_name")
+	mssql_server_name := terraform.Output(t, terraformOptions, "mssql_server_name")
+	mssql_server_fqdn := terraform.Output(t, terraformOptions, "mssql_server_fqdn")
+	assert.NotNil(t, database_name, "database_name should not be nil")
+	assert.NotNil(t, mssql_server_name, "mssql_server_name should not be nil")
+	assert.Contains(t, mssql_server_fqdn, "*.database.windows.net")
 }
