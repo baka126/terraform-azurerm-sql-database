@@ -142,60 +142,60 @@ variable "maintenance_configuration_name" {
   description = "The name of the Public Maintenance Configuration window to apply to the database. "
   type        = string
   default     = "SQL_Default"
-  validation {
-    condition     = var.elastic_pool_id == null || (var.elastic_pool_id != null && var.maintenance_configuration_name != "")
-    error_message = "maintenance_configuration_name is only applicable if elastic_pool_id is not set."
-  }
+  # validation {
+  #   condition     = var.elastic_pool_id == null || (var.elastic_pool_id != null && var.maintenance_configuration_name != "")
+  #   error_message = "maintenance_configuration_name is only applicable if elastic_pool_id is not set."
+  # }
 }
 
 variable "restore_point_in_time" {
   description = "Specifies the point in time (ISO8601 format) of the source database that will be restored to create the new database."
   type        = string
   default     = null
-  validation {
-    condition     = var.create_mode != "PointInTimeRestore" || (var.create_mode == "PointInTimeRestore" && var.restore_point_in_time != null)
-    error_message = "restore_point_in_time is only applicable if create_mode is PointInTimeRestore and must not be null when create_mode is PointInTimeRestore."
-  }
+  # validation {
+  #   condition     = var.create_mode != "PointInTimeRestore" || (var.create_mode == "PointInTimeRestore" && var.restore_point_in_time != null)
+  #   error_message = "restore_point_in_time is only applicable if create_mode is PointInTimeRestore and must not be null when create_mode is PointInTimeRestore."
+  # }
 }
 
 variable "recover_database_id" {
   description = "The ID of the database to be recovered. This property is only applicable when the create_mode is Recovery."
   type        = string
   default     = null
-  validation {
-    condition     = var.create_mode != "Recovery" || (var.create_mode == "Recovery" && var.recover_database_id != null)
-    error_message = "recover_database_id is only applicable if create_mode is Recovery and must not be null when create_mode is Recovery."
-  }
+  # validation {
+  #   condition     = var.create_mode != "Recovery" || (var.create_mode == "Recovery" && var.recover_database_id != null)
+  #   error_message = "recover_database_id is only applicable if create_mode is Recovery and must not be null when create_mode is Recovery."
+  # }
 }
 
 variable "recover_point_id" {
   description = "The ID of the Recovery Services Recovery Point Id to be restored. This property is only applicable when the create_mode is Recovery."
   type        = string
   default     = null
-  validation {
-    condition     = var.create_mode != "Recovery" || (var.create_mode == "Recovery" && var.recover_point_id != null)
-    error_message = "restore_point_id is only applicable if create_mode is Recovery."
-  }
+  # validation {
+  #   condition     = var.create_mode != "Recovery" || (var.create_mode == "Recovery" && var.recover_point_id != null)
+  #   error_message = "restore_point_id is only applicable if create_mode is Recovery."
+  # }
 }
 
 variable "restore_dropped_database_id" {
   description = "The ID of the database to be restored. This property is only applicable when the create_mode is Restore."
   type        = string
   default     = null
-  validation {
-    condition     = var.create_mode != "Restore" || (var.create_mode == "Restore" && var.restore_dropped_database_id != null)
-    error_message = "restore_dropped_database_id is only applicable if create_mode is Restore and must not be null when create_mode is Restore."
-  }
+  # validation {
+  #   condition     = var.create_mode != "Restore" || (var.create_mode == "Restore" && var.restore_dropped_database_id != null)
+  #   error_message = "restore_dropped_database_id is only applicable if create_mode is Restore and must not be null when create_mode is Restore."
+  # }
 }
 
 variable "restore_long_term_retention_backup_id" {
   description = "The ID of the long term retention backup to be restored. This property is only applicable when the create_mode is RestoreLongTermRetentionBackup."
   type        = string
   default     = null
-  validation {
-    condition     = var.create_mode != "RestoreLongTermRetentionBackup" || (var.create_mode == "RestoreLongTermRetentionBackup" && var.restore_long_term_retention_backup_id != null)
-    error_message = "restore_long_term_retention_backup_id is only applicable if create_mode is RestoreLongTermRetentionBackup and must not be null when create_mode is RestoreLongTermRetentionBackup."
-  }
+  # validation {
+  #   condition     = var.create_mode != "RestoreLongTermRetentionBackup" || (var.create_mode == "RestoreLongTermRetentionBackup" && var.restore_long_term_retention_backup_id != null)
+  #   error_message = "restore_long_term_retention_backup_id is only applicable if create_mode is RestoreLongTermRetentionBackup and must not be null when create_mode is RestoreLongTermRetentionBackup."
+  # }
 }
 
 variable "read_replica_count" {
