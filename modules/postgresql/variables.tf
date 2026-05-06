@@ -3,8 +3,8 @@ variable "database_type" {
   description = "Type of database to be created"
 
   validation {
-    condition     = contains(["mysql", "postgresql"], var.database_type)
-    error_message = "Valid values for database_type are 'mysql' or 'postgresql'."
+    condition     = contains(["mssql", "postgresql"], var.database_type)
+    error_message = "Valid values for database_type are 'mssql' or 'postgresql'."
   }
 }
 variable "administrator_login" {
