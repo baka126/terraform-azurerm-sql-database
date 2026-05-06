@@ -161,7 +161,7 @@ output "mssql_server_extended_auditing_policy_ids" {
 
 output "mssql_server_microsoft_support_auditing_policy_ids" {
   description = "The IDs of the created MSSQL Server Microsoft Support Auditing Policies."
-  value       = module.mssql.mssql_server_microsoft_support_auditing_policy
+  value       = module.mssql.mssql_server_microsoft_support_auditing_policy_ids
 }
 
 output "mssql_server_tde_ids" {
