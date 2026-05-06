@@ -268,7 +268,7 @@ variable "active_directory_administrators" {
 }
 
 ################################################################################
-# Argument Reference for Module MSSQL
+# Argument Reference for Module Mysql
 ################################################################################
 ####azure mssql server####
 
