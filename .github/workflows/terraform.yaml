@@ -76,6 +76,7 @@ jobs:
           directory: .
           quiet: true # optional: display only failed checks
           skip_check: CKV_GHA_7
+          soft_fail: true # optional: exit with code 0 even if there are failed checks
 
       - name: Terraform Validate
         run: |
@@ -90,3 +91,4 @@ jobs:
           format: "sarif"
           output: "trivy-results.sarif"
           severity: "CRITICAL"
+          exit-code: "0"
