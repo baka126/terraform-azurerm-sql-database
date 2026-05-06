@@ -8,7 +8,7 @@ This Terraform module serves as a universal wrapper for deploying either **Azure
 ### PostgreSQL Flexible Server
 ```hcl
 module "database" {
-  source            = "Tenets/azure-database/azurerm"
+  source            = "../../"
   database_type     = "postgresql"
   resource_group_name = "my-rg"
   server_name       = "my-postgres-server"
@@ -20,7 +20,7 @@ module "database" {
 ### Azure SQL (MSSQL) Database
 ```hcl
 module "database" {
-  source            = "Tenets/azure-database/azurerm"
+  source            = "../../"
   database_type     = "mssql"
   resource_group_name = "my-rg"
   server_name       = "my-mssql-server"

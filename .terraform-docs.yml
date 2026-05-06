@@ -26,7 +26,7 @@ content: |-
   ### PostgreSQL Flexible Server
   ```hcl
   module "database" {
-    source            = "Tenets/azure-database/azurerm"
+    source            = "./"
     database_type     = "postgresql"
     resource_group_name = "my-rg"
     server_name       = "my-postgres-server"
@@ -38,7 +38,7 @@ content: |-
   ### Azure SQL (MSSQL) Database
   ```hcl
   module "database" {
-    source            = "Tenets/azure-database/azurerm"
+    source            = "./"
     database_type     = "mssql"
     resource_group_name = "my-rg"
     server_name       = "my-mssql-server"
